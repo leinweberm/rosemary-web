@@ -1,6 +1,7 @@
 use warp::Filter;
 use warp::http::{ Response, StatusCode };
 use serde_derive::{Deserialize, Serialize};
+use memory_stats::memory_stats;
 
 #[derive(Deserialize, Serialize, Debug)]
 struct Employee {
@@ -15,6 +16,10 @@ struct SaluteYou {
 }
 
 async fn get_salute_handler(person: SaluteYou) -> Result<impl warp::Reply, warp::Rejection> {
+    if let Some(usage) = memory_stats() {
+        println!("Current physical memory usage: {}", usage.physical_mem);
+        println!("Current virtual memory usage: {}", usage.virtual_mem);
+    }
     Ok(
         Response::builder()
             .status(StatusCode::OK)
