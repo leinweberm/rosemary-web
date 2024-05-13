@@ -32,8 +32,7 @@ async fn post_file(form: warp::multipart::FormData) -> Result<impl warp::Reply, 
 
 pub fn post() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     warp::post()
-        .and(warp::path("upload"))
+        .and(warp::path("file"))
         .and(warp::multipart::form())
         .and_then(post_file)
-        .recover(crate::requests::routes::test::not_found::handle_not_found)
 }

@@ -1,9 +1,9 @@
-use warp::Filter;
+use warp::{Filter, Rejection, Reply, path, query};
 use warp::http::{ Response, StatusCode };
 use crate::requests::dto::salute_you::SaluteYou;
 use memory_stats::memory_stats;
 
-async fn get_salute(person: SaluteYou) -> Result<impl warp::Reply, warp::Rejection> {
+async fn get_salute(person: SaluteYou) -> Result<impl Reply, Rejection> {
     if let Some(usage) = memory_stats() {
         println!("Current physical memory usage: {}", usage.physical_mem);
         println!("Current virtual memory usage: {}", usage.virtual_mem);
@@ -15,10 +15,9 @@ async fn get_salute(person: SaluteYou) -> Result<impl warp::Reply, warp::Rejecti
     )
 }
 
-pub fn get() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(warp::path("salute"))
-        .and(warp::query::<SaluteYou>())
+        .and(path("salute"))
+        .and(query::<SaluteYou>())
         .and_then(get_salute)
-        .recover(crate::requests::routes::test::not_found::handle_not_found)
 }
