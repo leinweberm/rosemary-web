@@ -1,4 +1,5 @@
 mod requests;
+mod utils;
 
 #[tokio::main]
 async fn main() {
