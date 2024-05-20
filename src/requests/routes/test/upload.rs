@@ -5,7 +5,6 @@ use warp::Buf;
 use warp::http::{ Response, StatusCode };
 use sha2::{ Sha256, Digest };
 use std::sync::{Arc, Mutex};
-// use tokio::task;
 use std;
 
 async fn post_upload(form: FormData) -> Result<impl Reply, Rejection> {
