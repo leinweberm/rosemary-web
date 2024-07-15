@@ -33,7 +33,6 @@ pub async fn init_connection() -> Result<(), Error> {
 
     tokio::spawn(async move {
         if let Err(e) = connection.await {
-            // eprintln!("connection error: {}", e);
             panic!("connection error {}", e);
         }
     });

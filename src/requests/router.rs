@@ -2,8 +2,10 @@ use warp::Filter;
 use crate::requests;
 
 pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+    // GET /api/v1.0/paintings
+    requests::routes::v1_0::paintings::get_all::get()
     // GET /salute
-    requests::routes::test::salute::get()
+    .or(requests::routes::test::salute::get())
     // POST /promote
     .or(requests::routes::test::promote::post())
     // POST /file
