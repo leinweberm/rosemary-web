@@ -1,59 +1,51 @@
+use std::sync::Arc;
 use warp::{Filter, Rejection, Reply, path, query};
+use sqlx::{Pool, Postgres};
 
 use crate::requests::dto::get_paintings_query::GetPaintingsQuery;
 use crate::database::models::painting::Painting;
 use crate::database::connection::get_client;
 use crate::requests::dto::paginated_result::PaginatedResult;
 
-async fn get_paintings(query: GetPaintingsQuery) {
+async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection> {
     let mut result: PaginatedResult<Painting> = PaginatedResult::new();
-    let client: &tokio_postgres::Client = get_client().await.unwrap();
+    let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
 
-
+    let count_client = Arc::clone(&client);
     let count_task = tokio::spawn(async move {
-        let count = sqlx::query(r#"
-            SELECT COUNT(*)
-            FROM paintings
-            WHERE deleted IS NULL
-        "#)
-            .fetch_one(&client)
-            .await?;
+        let (count,): (i64,) = sqlx::query_as(&Painting::count_all_query())
+            .fetch_one(&*count_client)
+            .await
+            .expect("Failed to count painting rows");
+
         count
     });
 
-
+    let rows_client = Arc::clone(&client);
     let rows_task = tokio::spawn(async move {
-        let rows = sqlx::query_as::<_, Painting>(r#"
-            SELECT
-                p.id,
-                p.created,
-                p.deleted,
-                p.price,
-                p.painting_title,
-                p.painting_description,
-                p.data,
-                p.width,
-                p.height,
-                p.preview
-            FROM paintings p
-            WHERE deleted IS NULL
-            ORDER BY $1 $2
-            LIMIT $3 OFFSET $4
-        "#)
-            .bind(query.sort.unwrap_or("created".to_string()))
-            .bind(query.order.unwrap_or("DESC".to_string()))
-            .bind(query.limit.unwrap_or(20) as f32)
-            .bind(query.offset.unwrap_or(0) as f32)
-            .fetch_all(&client);
-            // .await?;
+        let limit = query.limit.unwrap_or(20);
+        let offset = query.offset.unwrap_or(0);
+        let query = Painting::get_all_query(limit, offset);
+        let rows = sqlx::query_as::<_, Painting>(&query)
+            .fetch_all(&*rows_client)
+            .await
+            .expect("Failed to select painting rows");
         rows
     });
 
-    let (count, rows) = tokio::try_join!(count_task, rows_task).unwrap();
-    println!("Count: {}", &count);
-    println!("Rows: {}", &rows);
+    let (count, rows) = tokio::join!(count_task, rows_task);
 
-    Ok(warp::reply::json(&result));
+    result.count = match count {
+        Ok(count) => count,
+        Err(_) => 0,
+    };
+
+    result.rows = match rows {
+        Ok(rows) => rows,
+        Err(_) => Vec::new(),
+    };
+
+    Ok(warp::reply::json(&result))
 }
 
 pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
