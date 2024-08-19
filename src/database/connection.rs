@@ -1,54 +1,39 @@
-use dotenv::dotenv;
+use sqlx::{Pool, Postgres};
+use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
 use std::env;
-use tokio_postgres::{Client, Error};
+use dotenv::dotenv;
 use lazy_static::lazy_static;
-use tokio::sync::OnceCell;
-use openssl::ssl::{SslConnector, SslMethod};
-use postgres_openssl::MakeTlsConnector;
-use crate::utils::file_system::fs_read;
+use once_cell::sync::OnceCell;
 
 lazy_static! {
-    pub static ref CLIENT: OnceCell<Client> = OnceCell::const_new();
+    pub static ref CLIENT: OnceCell<Pool<Postgres>> = OnceCell::new();
 }
 
-pub async fn init_connection() -> Result<(), Error> {
+pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
     dotenv().ok();
 
     let database_url = env::var("database_url")
         .expect("$database_url must be set");
-    let cert_path = String::from("certs/root.crt");
 
-    let mut builder = SslConnector::builder(SslMethod::tls()).unwrap();
+    let mut connect_options: PgConnectOptions = database_url.parse()?;
+    connect_options = connect_options.ssl_mode(PgSslMode::Require);
+    connect_options = connect_options.ssl_root_cert("certs/root.crt");
 
-    let check = fs_read::file_exists(&cert_path).await;
-    if !check {
-        panic!("CA cert file not found");
-    }
-
-    builder.set_ca_file(&cert_path).unwrap();
-    let connector = MakeTlsConnector::new(builder.build());
-
-    let (client, connection) = tokio_postgres::connect(&database_url, connector).await?;
-
-
-    tokio::spawn(async move {
-        if let Err(e) = connection.await {
-            panic!("connection error {}", e);
-        }
-    });
-
-    let rows = client
-        .query("SELECT 1 + 1", &[])
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect_with(connect_options)
         .await?;
 
-    let value: i64 = rows[0].get(0);
-    assert_eq!(value, 2);
+    let pool_clone = pool.clone();
+    CLIENT.set(pool_clone)
+        .expect("Failed to set client");
 
-    CLIENT.set(client).expect("Failed to set client");
-
-    Ok(())
+    Ok(pool)
 }
 
-pub async fn get_client() -> Result<&'static Client, std::io::Error> {
-    CLIENT.get().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "Client not"))
+pub async fn get_client() -> Result<&'static Pool<Postgres>, std::io::Error> {
+    CLIENT.get().ok_or_else(||std::io::Error::new(
+        std::io::ErrorKind::Other,
+        "Client does not exist"
+    ))
 }
