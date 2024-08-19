@@ -50,7 +50,9 @@ async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection
 
 pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(path("/api/v1.0/paintings"))
+        .and(path("api"))
+        .and(path("v1.0"))
+        .and(path("paintings"))
         .and(query::<GetPaintingsQuery>())
         .and_then(get_paintings)
 }

@@ -46,7 +46,7 @@ impl Painting {
     pub fn count_all_query() -> String {
         format!(r#"
             SELECT COUNT(p.id)
-            FROM paintings p
+            FROM rosemary.paintings p
             WHERE p.deleted IS NULL
         "#)
     }
@@ -63,8 +63,8 @@ impl Painting {
                     'title', pi.title,
                     'painting_id', pi.painting_id
                 )) AS preview
-            FROM paintings p
-            LEFT JOIN paintings_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
+            FROM rosemary.paintings p
+            LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
             WHERE deleted IS NULL
             ORDER BY p.created DESC
             LIMIT {} OFFSET {}
