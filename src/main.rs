@@ -3,12 +3,17 @@ use sqlx::{Pool, Postgres};
 mod requests;
 mod utils;
 mod database;
+mod client;
 
+extern crate pretty_env_logger;
+#[macro_use] extern crate log;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Database connecting...");
+    pretty_env_logger::init();
+
+    debug!(target: "app", "Database connecting");
     let client: Pool<Postgres> = database::connection::init_connection().await?;
-    println!("Database connected");
+    debug!(target: "app", "Database connected");
 
     let rows: (i64,) = sqlx::query_as("SELECT $1")
         .bind(150_i64)
@@ -16,12 +21,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     assert_eq!(rows.0, 150_i64);
-    println!("Database connection checked");
+    debug!(target: "app", "Database connection checked");
 
     let routes = requests::router::router();
-    println!("Router routes initialized");
+    debug!(target: "app", "Router routes initialized");
 
-    println!("App is listening on 127.0.0.1:3030");
+    debug!(target: "app", "App is listening on 127.0.0.1:3030");
     warp::serve(routes)
         .run(([127, 0, 0, 1], 3030))
         .await;
