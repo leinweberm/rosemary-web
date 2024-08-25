@@ -1,22 +1,19 @@
 use sqlx::{Pool, Postgres};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
-use std::env;
-use dotenv::dotenv;
+// use std::env;
+// use dotenv::dotenv;
 use lazy_static::lazy_static;
-use once_cell::sync::OnceCell;
+use tokio::sync::OnceCell;
+
+use crate::config::load::{ConfigField, get};
 
 lazy_static! {
     pub static ref CLIENT: OnceCell<Pool<Postgres>> = OnceCell::new();
 }
 
 pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
-    debug!(target: "db", "loading .env file");
-    dotenv().ok();
-    debug!(target: "db", ".env file loaded");
-
-    let database_url = env::var("database_url").expect("$database_url is missing");
-    debug!(target: "db", "database url: {}", &database_url);
-    let cert_path = env::var("database_cert_path").expect("$database_cert_path is missing");
+    let database_url = get::<String>(ConfigField::DatabaseUrl).await?;
+    let cert_path = get::<String>(ConfigField::DatabaseCertPath).await?;
 
     let mut connect_options: PgConnectOptions = database_url.parse()?;
     debug!(target: "db", "initialized basic connection options");
@@ -34,7 +31,7 @@ pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
     debug!(target: "db", "database connection pool cloned");
 
     CLIENT.set(pool_clone)
-        .expect("Failed to set client");
+        .expect("Failed to set client to client as static reference");
     debug!(target: "db", "global static pool reference set");
 
     Ok(pool)
@@ -42,8 +39,7 @@ pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
 
 pub async fn get_client() -> Result<&'static Pool<Postgres>, std::io::Error> {
     debug!(target: "db", "getting static datatabase pool reference");
-    CLIENT.get().ok_or_else(||std::io::Error::new(
-        std::io::ErrorKind::Other,
-        "Client does not exist"
-    ))
+    CLIENT
+        .get()
+        .ok_or_else(||std::io::Error::new(std::io::ErrorKind::Other, "Client does not exist"))
 }

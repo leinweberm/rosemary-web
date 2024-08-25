@@ -4,12 +4,17 @@ mod requests;
 mod utils;
 mod database;
 mod client;
+mod config;
 
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     pretty_env_logger::init();
+
+    let _init_config = config::load::init().await?;
+    let _test_config = config::load::test().await?;
+    debug!("app config loaded and tested");
 
     debug!(target: "app", "Database connecting");
     let client: Pool<Postgres> = database::connection::init_connection().await?;
