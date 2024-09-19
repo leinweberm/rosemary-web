@@ -1,7 +1,5 @@
 use sqlx::{Pool, Postgres};
 use sqlx::postgres::{PgConnectOptions, PgPoolOptions, PgSslMode};
-// use std::env;
-// use dotenv::dotenv;
 use lazy_static::lazy_static;
 use tokio::sync::OnceCell;
 

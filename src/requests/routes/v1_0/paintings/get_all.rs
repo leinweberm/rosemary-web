@@ -10,6 +10,7 @@ use crate::requests::dto::paginated_result::PaginatedResult;
 async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection> {
     let mut result: PaginatedResult<Painting> = PaginatedResult::new();
     let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
+		debug!(target: "api", "paintings_get_all:client - database client aquired");
 
     let count_client = Arc::clone(&client);
     let count_task = tokio::spawn(async move {
@@ -37,13 +38,21 @@ async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection
 
     result.count = match count {
         Ok(count) => count,
-        Err(_) => 0,
+        Err(error) => {
+					error!(target: "api", "paintings_get_all:error - failed to count {}", error);
+					0
+				},
     };
+		debug!(target: "api", "paintings_get_all:count - {}", &result.count);
 
     result.rows = match rows {
         Ok(rows) => rows,
-        Err(_) => Vec::new(),
+        Err(error) => {
+					error!(target: "api", "paintings_get_ll:error - failed to get rows {}", error);
+					Vec::new()
+				},
     };
+		debug!(target: "api", "paintings_get_all:rows - {:?}", &result.rows);
 
     Ok(warp::reply::json(&result))
 }
@@ -57,3 +66,19 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         .and_then(get_paintings)
         .with(warp::log("api"))
 }
+
+// #[tokio::test]
+// async fn get_all() {
+// 	let filter = get();
+//
+// 	let response = warp::test::request()
+// 		.path("/api/v1.0/paintings")
+// 		.reply(&filter)
+// 		.await;
+// 	let body: PaginatedResult<Painting> = serde_json::from_slice(response.body())
+// 		.expect("Failed to parse response body");
+//
+// 	assert_eq!(response.status(), warp::http::StatusCode::OK);
+// 	assert!(body.count >= 0);
+// 	assert!(body.rows.is_empty() || body.rows.len() > 0);
+// }

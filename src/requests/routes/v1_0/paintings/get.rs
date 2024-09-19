@@ -14,10 +14,6 @@ pub struct GetPaintingResult {
 	pub images: Vec<PaintingImage>,
 }
 
-#[derive(Debug)]
-struct PaintingNotFound;
-impl warp::reject::Reject for PaintingNotFound {}
-
 async fn get_painting(id: Uuid) -> Result<impl Reply, Rejection> {
 	let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
 

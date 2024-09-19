@@ -1,0 +1,383 @@
+openapi: 3.0.0
+info:
+  title: Rosemary Artist API
+  version: 1.0.0
+  description: API serving data for [rosemary-artist.com](https://rosemary-artist.com)
+
+servers:
+  - url: https://rosemary-artist.com/api/v1.0
+    description: API for serving paintings, photos, tattoos, blog related records
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: https
+      region:
+        default: westeurope
+
+paths:
+  /paintings:
+    get:
+      deprecated: false
+      summary: Returns paginates paintings list
+      tags:
+        - paintings
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          description: Limit for fetched rows
+          schema:
+            type: number
+            default: 25
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: offset
+          required: false
+          description: SQL qeury offset / page
+          schema:
+            type: number
+            default: 0
+            minimum: 0
+        - in: query
+          name: orderBy
+          required: false
+          description: Order result by
+          schema:
+            type: string
+            enum:
+              - created
+              - height
+              - width
+              - price
+              - sold
+            default: created
+        - in: query
+          name: orderDirection
+          description: order direction
+          schema:
+            type: 'string'
+            enum:
+              - DESC
+              - ASC
+            default: DESC
+      responses:
+        '200':
+          description: A JSON object with properties count and rows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: number
+                  rows:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Painting'
+    post:
+      deprecated: false
+      summary: Creates new painting record
+      tags:
+        - paintings
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaintingCreate'
+      responses:
+        '201':
+          description: Successful operation returns newly created JSON object
+          content:
+            application/json:
+              schema:
+                type: 'object'
+                properties:
+                  status:
+                    type: string
+                    default: Success
+                  message:
+                    type: string
+                    default: Painting created successfully
+                  data:
+                    $ref: '#/components/schemas/PaintingBase'
+        '401':
+          description: Error - unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+        '403':
+          description: Error - validation of request body failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+
+        '404':
+          description: Error - not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+  /paintings/{id}:
+    patch:
+      deprecated: false
+      summary: Updates painting record
+      tags:
+        - paintings
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaintingUpdate'
+      responses:
+        '200':
+          description: Success, painting updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaintingBase'
+        '401':
+          description: Error - unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+        '403':
+          description: Error - validation of request body failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+        '404':
+          description: Error - not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+    delete:
+      deprecated: false
+      summary: Either softly deletes a painting or force hard deletion
+      tags:
+        - paintings
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success, painting deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    default: Success
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    nullable: true
+        '401':
+          description: Error - unauthorized access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+        '403':
+          description: Error - validation of request body failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+        '404':
+          description: Error - not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Translation:
+      required:
+        - cs
+        - en
+      properties:
+        cs:
+          type: string
+        en:
+          type: string
+    PaintingImage:
+      required:
+        - id
+        - url
+        - alt
+        - title
+        - preview
+      properties:
+        id:
+          type: string
+        preview:
+          type: boolean
+        url:
+          type: string
+        alt:
+          $ref: '#/components/schemas/Translation'
+        title:
+          $ref: '#/components/schemas/Translation'
+        painting_id:
+          type: string
+    Painting:
+      required:
+        - id
+        - created
+        - deleted
+        - price
+        - painting_title
+        - painting_description
+        - data
+        - width
+        - height
+        - preview
+      properties:
+        id:
+          type: string
+        created:
+          type: string
+        deleted:
+            type: string
+            nullable: true
+        price:
+          type: number
+        painting_title:
+          $ref: '#/components/schemas/Translation'
+        painting_description:
+          $ref: '#/components/schemas/Translation'
+        data:
+          type: object
+          properties:
+            sold:
+              type: boolean
+        width:
+          type: number
+        height:
+          type: number
+        preview:
+          $ref: '#/components/schemas/PaintingImage'
+    PaintingBase:
+      required:
+        - id
+        - created
+        - deleted
+        - price
+        - painting_title
+        - painting_description
+        - data
+        - width
+        - height
+      properties:
+        id:
+          type: string
+        created:
+          type: string
+        deleted:
+          type: string
+          nullable: true
+        price:
+          type: number
+        painting_title:
+          $ref: '#/components/schemas/Translation'
+        painting_description:
+          $ref: '#/components/schemas/Translation'
+        data:
+          type: 'object'
+        width:
+          type: number
+        height:
+          type: number
+    PaintingCreate:
+      required:
+        - price
+        - title_cs
+        - title_en
+        - description_cs
+        - description_en
+        - width
+        - height
+      properties:
+        price:
+          type: number
+        title_cs:
+          type: string
+        title_en:
+          type: string
+        description_cs:
+          type: string
+        description_en:
+          type: string
+        width:
+          type: number
+        height:
+          type: number
+    PaintingUpdate:
+      properties:
+        price:
+          type: number
+        title_cs:
+          type: string
+        title_en:
+          type: string
+        description_cs:
+          type: string
+        description_en:
+          type: string
+        width:
+          type: number
+        height:
+          type: number
+        sold:
+          type: boolean
+    CustomError:
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          default: Error
+        message:
+          type: string
+          enum:
+            - ValidationError
+            - Unauthorized
+            - InternalServerError
+            - NotFound
+        data:
+          type: object
+          nullable: true
