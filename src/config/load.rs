@@ -13,6 +13,7 @@ use std::sync::Arc;
 /// CacheClientStatic: u8 // (hours) controls static assets browser cache
 /// CacheMemoryPages: u8 // (minutes) controls in-memory Rust cache for html pages
 /// CacheMemoryGeneral: u8 // (seconds) controls in-memory Rust general purpose cache
+/// JwtSecret: String // for creating jwt keys
 /// ```
 #[derive(Clone)]
 pub enum ConfigField {
@@ -23,7 +24,8 @@ pub enum ConfigField {
     CacheClientPages,
     CacheClientStatic,
     CacheMemoryPages,
-    CacheMemoryGeneral
+    CacheMemoryGeneral,
+		JwtSecret
 }
 
 impl ConfigField {
@@ -36,7 +38,8 @@ impl ConfigField {
             ConfigField::CacheClientPages => "cache_client_pages",
             ConfigField::CacheClientStatic => "cache_client_static",
             ConfigField::CacheMemoryPages => "cache_memory_pages",
-            ConfigField::CacheMemoryGeneral => "cache_memory_general"
+            ConfigField::CacheMemoryGeneral => "cache_memory_general",
+						ConfigField::JwtSecret => "jwt_secret"
         }
     }
 }
@@ -50,7 +53,8 @@ pub struct Config {
     pub cache_client_pages: u8,
     pub cache_client_static: u8,
     pub cache_memory_pages: u8,
-    pub cache_memory_general: u8
+    pub cache_memory_general: u8,
+		pub jwt_secret: String,
 }
 
 impl Config {
@@ -63,7 +67,8 @@ impl Config {
             ConfigField::CacheClientPages => Box::new(self.cache_client_pages),
             ConfigField::CacheClientStatic => Box::new(self.cache_client_static),
             ConfigField::CacheMemoryPages => Box::new(self.cache_memory_pages),
-            ConfigField::CacheMemoryGeneral => Box::new(self.cache_memory_general)
+            ConfigField::CacheMemoryGeneral => Box::new(self.cache_memory_general),
+						ConfigField::JwtSecret => Box::new(self.jwt_secret.clone()),
         };
 
         if let Some(result) = value.downcast_ref::<T>() {
@@ -75,7 +80,7 @@ impl Config {
 }
 
 lazy_static! {
-    pub static ref CONFIG: OnceCell<Arc<Config>> = OnceCell::const_new();
+    pub static ref CONFIG: OnceCell<Arc<Config>> = OnceCell::new();
 }
 
 pub async fn init () -> Result<(), std::io::Error> {
@@ -124,6 +129,10 @@ pub async fn init () -> Result<(), std::io::Error> {
         .parse()
         .expect(&format!("{} {} {}", &field, &invalid_type_error, "u8"));
 
+		field = ConfigField::JwtSecret.to_str();
+		let jwt_secret = env::var(&field)
+			.expect(&format!("{} {}", &field, &missing_required_error));
+
     let config = Arc::new(Config {
         test_variable: "test".to_string(),
         database_url,
@@ -132,7 +141,8 @@ pub async fn init () -> Result<(), std::io::Error> {
         cache_client_pages,
         cache_client_static,
         cache_memory_pages,
-        cache_memory_general
+        cache_memory_general,
+				jwt_secret
     });
     debug!(target: "cfg", "config instance created");
 

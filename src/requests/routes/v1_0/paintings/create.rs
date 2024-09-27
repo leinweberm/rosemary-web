@@ -5,11 +5,12 @@ use sqlx::{Postgres, Pool};
 use crate::database::connection::get_client;
 use crate::database::models::painting::{Painting, PaintingCreate, PaintingBase};
 use crate::requests::dto::generic_response::{GenericResponse, Status};
+use crate::utils::auth::token::{jwt_auth, Claims};
 
 async fn create_painting(data: PaintingCreate) -> Result<impl Reply, Rejection> {
 	let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
 	debug!(target: "api", "paintings_create:client - database client aquired");
-	debug!(target: "api", "paintings_create:data - {:?}", data);
+	debug!(target: "api", "paintings_create:data - {:?}", &data);
 
 	let query = Painting::create_query(data);
 	debug!(target: "api", "paitings_create:query - {}", &query);
@@ -18,25 +19,25 @@ async fn create_painting(data: PaintingCreate) -> Result<impl Reply, Rejection> 
 		.await;
 
 	match create_result {
-        Ok(painting) => {
+				Ok(painting) => {
 						debug!(target: "api", "paintings_create:result - {:?}", &painting);
-            let response = GenericResponse::<PaintingBase> {
-                status: Status::Success,
-                message: "Painting created successfully".to_string(),
+						let response = GenericResponse::<PaintingBase> {
+								status: Status::Success,
+								message: "Painting created successfully",
 								data: Some(painting),
-            };
-            Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
-        }
-        Err(e) => {
-            error!(target: "api", "paintings_create:error - {:?}", e);
-            let response = GenericResponse::<PaintingBase> {
-                status: Status::Error,
-                message: format!("Failed to create painting: {}", e),
+						};
+						Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
+				}
+				Err(e) => {
+						error!(target: "api", "paintings_create:error - {:?}", e);
+						let response = GenericResponse::<PaintingBase> {
+								status: Status::Error,
+								message: "Failed to create painting",
 								data: None,
-            };
-            Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::INTERNAL_SERVER_ERROR))
-        }
-    }
+						};
+						Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::INTERNAL_SERVER_ERROR))
+				}
+		}
 }
 
 pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -46,7 +47,10 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and(path("paintings"))
 		.and(path::end())
 		.and(warp::body::content_length_limit(1024 * 1024))
-		.and(warp::body::json())
-		.and_then(create_painting)
+		.and(warp::body::json::<PaintingCreate>())
+		.and(jwt_auth())
+		.and_then(|painting: PaintingCreate, _claims: Claims| async move {
+			create_painting(painting).await
+		})
 		.with(warp::log("api"))
 }

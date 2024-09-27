@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::postgres::PgRow;
 use sqlx::Row;
+use sqlx::types::Json;
 use uuid::Uuid;
 use std::collections::HashMap;
-use sqlx::types::Json;
 use warp::Reply;
 use serde_json::json;
 use serde_json::Value as JsonValue;
@@ -27,7 +27,7 @@ pub struct PaintingBase {
 }
 
 impl <'r>FromRow<'r, PgRow> for PaintingBase {
-	fn from_row(row: &'r PgRow) -> sqlx::Result<Self> {
+	fn from_row(row: &'r PgRow) -> sqlx::Result<Self, sqlx::Error> {
 		Ok(Self {
 			id: row.try_get("id")?,
 			created: row.try_get("created")?,

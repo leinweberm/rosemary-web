@@ -1,10 +1,12 @@
 use sqlx::{Pool, Postgres};
+use warp::Filter;
 
 mod requests;
 mod utils;
 mod database;
 mod client;
 mod config;
+mod errors;
 
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
@@ -28,7 +30,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(rows.0, 150_i64);
     debug!(target: "app", "Database connection checked");
 
-    let routes = requests::router::router();
+    let routes = (requests::router::router())
+			.recover(errors::api_error::handle_rejection);
     debug!(target: "app", "Router routes initialized");
 
     debug!(target: "app", "App is listening on 127.0.0.1:3030");
