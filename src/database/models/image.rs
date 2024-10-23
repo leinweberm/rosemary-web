@@ -25,13 +25,13 @@ impl PaintingImage {
 		"#, id)
 	}
 
-	pub fn count_all_for_query(id: &Uuid) -> String {
-		format!(r#"
-			SELECT COUNT(pi.id)
-			FROM rosemary.painting_images pi
-			WHERE pi.painting_id = {}
-		"#, id)
-	}
+	// pub fn count_all_for_query(id: &Uuid) -> String {
+	// 	format!(r#"
+	// 		SELECT COUNT(pi.id)
+	// 		FROM rosemary.painting_images pi
+	// 		WHERE pi.painting_id = {}
+	// 	"#, id)
+	// }
 }
 
 impl<'r> FromRow<'r, PgRow> for PaintingImage {

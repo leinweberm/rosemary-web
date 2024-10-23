@@ -6,16 +6,26 @@ use sqlx::postgres::PgRow;
 use sqlx::Row;
 use serde_json::Value as JsonValue;
 
+use crate::requests::dto::generic_response::Status;
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserCreate {
 	pub username: String,
 	pub password: String,
+	pub secret: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserLogin {
 	pub username: String,
 	pub password: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LoginResponse {
+	pub status: Status,
+	pub token: String,
+	pub ui: Uuid
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -28,6 +38,7 @@ pub struct UserChangePassword {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserDelete {
 	pub force: bool,
+	pub secret: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -56,9 +67,9 @@ impl <'r>FromRow<'r, PgRow> for User {
 }
 
 impl User {
-	pub fn create_qeury(data: UserCreate) -> String {
-		format!(
-			r#"INSERT INTO rosemary.users(
+	pub fn create_query(data: UserCreate) -> String {
+		format!(r#"
+			INSERT INTO rosemary.users(
 				role_type,
 				username,
 				password,
@@ -71,19 +82,40 @@ impl User {
 				NULL,
 				NULL
 			)
-			"#,
-			data.username,
-			data.password
-		)
+			RETURNING *
+		"#, data.username, data.password)
 	}
 
-	pub fn get_by_username(username: String) -> String {
-		format!(
-			r#"SELECT *
+	pub fn get_by_id_query(user_uid: Uuid) -> String {
+		format!(r#"
+			SELECT *
+			FROM rosemary.users
+			WHERE user_uid = '{}'
+				AND deleted IS NULL
+		"#, user_uid)
+	}
+
+	pub fn get_by_username_query(username: String) -> String {
+		format!(r#"
+			SELECT *
 			FROM rosemary.users
 			WHERE username = '{}'
-				AND deleted IS NULL"#,
-			username
-		)
+				AND deleted IS NULL
+		"#, username)
+	}
+
+	pub fn delete_query(user_uid: Uuid, force: bool) -> String {
+		if force == true {
+			format!(r#"
+				DELETE FROM rosemary.users
+				WHERE user_uid = '{}'
+			"#, user_uid)
+		} else {
+			format!(r#"
+				UPDATE rosemary.users
+				SET deleted = TRUE
+				WHERE user_uid = '{}'
+			"#, user_uid)
+		}
 	}
 }

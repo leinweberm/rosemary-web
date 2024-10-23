@@ -1813,6 +1813,7 @@ dependencies = [
  "postgres-openssl",
  "pretty_env_logger",
  "rand",
+ "ring",
  "serde",
  "serde_derive",
  "serde_json",

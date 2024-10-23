@@ -132,6 +132,8 @@ impl NotFoundError {
 	}
 }
 
+impl reject::Reject for NotFoundError {}
+
 /// # InternalServerError
 #[derive(Debug, Serialize)]
 pub struct InternalServerError {
@@ -160,7 +162,7 @@ impl InternalServerError {
 	}
 }
 
-// # DeserializationError
+impl reject::Reject for InternalServerError {}
 
 pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Rejection> {
 	error!(target: "api", "request error - {:?}", error);

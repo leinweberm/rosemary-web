@@ -66,19 +66,3 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
         .and_then(get_paintings)
         .with(warp::log("api"))
 }
-
-// #[tokio::test]
-// async fn get_all() {
-// 	let filter = get();
-//
-// 	let response = warp::test::request()
-// 		.path("/api/v1.0/paintings")
-// 		.reply(&filter)
-// 		.await;
-// 	let body: PaginatedResult<Painting> = serde_json::from_slice(response.body())
-// 		.expect("Failed to parse response body");
-//
-// 	assert_eq!(response.status(), warp::http::StatusCode::OK);
-// 	assert!(body.count >= 0);
-// 	assert!(body.rows.is_empty() || body.rows.len() > 0);
-// }
