@@ -15,6 +15,7 @@ use std::sync::Arc;
 /// CacheMemoryGeneral: u8 // (seconds) controls in-memory Rust general purpose cache
 /// JwtSecret: String // for creating jwt keys
 /// RegisterUserSecret: String // verification that user is allowed to create another users
+/// DatabaseCertProvided: bool // does connection to database require certificate?
 /// ```
 #[derive(Clone)]
 pub enum ConfigField {
@@ -28,6 +29,7 @@ pub enum ConfigField {
 	CacheMemoryGeneral,
 	JwtSecret,
 	RegisterUserSecret,
+	DatabaseCertProvided,
 }
 
 impl ConfigField {
@@ -43,6 +45,7 @@ impl ConfigField {
 			ConfigField::CacheMemoryGeneral => "cache_memory_general",
 			ConfigField::JwtSecret => "jwt_secret",
 			ConfigField::RegisterUserSecret => "register_user_secret",
+			ConfigField::DatabaseCertProvided => "database_cert_provided",
 		}
 	}
 }
@@ -59,6 +62,7 @@ pub struct Config {
 	pub cache_memory_general: u8,
 	pub jwt_secret: String,
 	pub register_user_secret: String,
+	pub database_cert_provided: bool,
 }
 
 impl Config {
@@ -74,6 +78,7 @@ impl Config {
 			ConfigField::CacheMemoryGeneral => Box::new(self.cache_memory_general),
 			ConfigField::JwtSecret => Box::new(self.jwt_secret.clone()),
 			ConfigField::RegisterUserSecret => Box::new(self.register_user_secret.clone()),
+			ConfigField::DatabaseCertProvided => Box::new(self.database_cert_provided),
 		};
 
 		if let Some(result) = value.downcast_ref::<T>() {
@@ -142,6 +147,21 @@ pub async fn init () -> Result<(), std::io::Error> {
 	let register_user_secret = env::var(&field)
 		.expect(&format!("{} {}", &field, &missing_required_error));
 
+	field = ConfigField::DatabaseCertProvided.to_str();
+	let database_cert_provided_string = env::var(&field);
+	let database_cert_provided = match database_cert_provided_string {
+		Ok(value) => {
+			if value == "true" {
+				true
+			} else {
+				false
+			}
+		},
+		Err(_) => {
+			false
+		}
+	};
+
 	let config = Arc::new(Config {
 		test_variable: "test".to_string(),
 		database_url,
@@ -153,6 +173,7 @@ pub async fn init () -> Result<(), std::io::Error> {
 		cache_memory_general,
 		jwt_secret,
 		register_user_secret,
+		database_cert_provided,
 	});
 	debug!(target: "cfg", "config instance created");
 
