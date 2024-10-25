@@ -7,6 +7,17 @@ use uuid::Uuid;
 use crate::database::models::generics::Translation;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct PaintingImageCreate {
+	pub preview: bool,
+	pub url: String,
+	pub alt_cs: String,
+	pub alt_en: String,
+	pub title_cs: String,
+	pub title_en: String,
+	pub painting_id: Uuid,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PaintingImage {
 	pub id: Uuid,
 	pub preview: bool,
@@ -17,7 +28,7 @@ pub struct PaintingImage {
 }
 
 impl PaintingImage {
-	pub fn get_all_for_query(id: &Uuid) -> String {
+	pub fn get_all_for_query(id: Uuid) -> String {
 		format!(r#"
 			SELECT *
 			FROM rosemary.painting_images pi
@@ -25,13 +36,53 @@ impl PaintingImage {
 		"#, id)
 	}
 
-	// pub fn count_all_for_query(id: &Uuid) -> String {
-	// 	format!(r#"
-	// 		SELECT COUNT(pi.id)
-	// 		FROM rosemary.painting_images pi
-	// 		WHERE pi.painting_id = {}
-	// 	"#, id)
-	// }
+	pub fn get_by_id_query(id: Uuid) -> String {
+		format!(r#"
+			SELECT *
+			FROM rosemary.painting_images
+			WHERE id = '{}'
+			LIMIT 1
+		"#, id)
+	}
+
+	pub fn create_query(data: PaintingImageCreate) -> String {
+		format!(r#"
+			INSERT INTO rosemary.painting_images(
+				preview,
+				url,
+				alt,
+				title,
+				painting_id
+			) VALUES (
+				{},
+				'{}',
+				JSON_BUILD_OBJECT(
+					'cs', '{}',
+					'en', '{}'
+				),
+				JSON_BUILD_OBJECT(
+					'cs', '{}',
+					'en', '{}'
+				),
+				'{}'
+			) RETURNING *"#,
+			data.preview,
+			data.url,
+			data.alt_cs,
+			data.alt_en,
+			data.title_cs,
+			data.title_en,
+			data.painting_id
+		)
+	}
+
+	pub fn delete_query(id: Uuid) -> String {
+		format!(r#"
+			DELETE FROM rosemary.paintin_images
+			WHERE id = '{}'
+			LIMIT 1
+		"#, id)
+	}
 }
 
 impl<'r> FromRow<'r, PgRow> for PaintingImage {

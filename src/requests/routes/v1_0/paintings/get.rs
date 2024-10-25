@@ -30,7 +30,7 @@ async fn get_painting(id: Uuid) -> Result<impl Reply, Rejection> {
 	let id2: Uuid = id.clone();
 	let images_client = Arc::clone(&client);
 	let images_task = tokio::spawn(async move {
-		let query = PaintingImage::get_all_for_query(&id2);
+		let query = PaintingImage::get_all_for_query(id2);
 		let images = sqlx::query_as::<_, PaintingImage>(&query)
 			.fetch_all(&*images_client)
 			.await;

@@ -4,10 +4,13 @@ use bytes::Buf;
 use futures_util::TryStreamExt;
 use serde::{Serialize, Deserialize};
 use tokio::sync::Mutex;
+use uuid::Uuid;
 use warp::{path, Filter, Rejection, Reply, query};
 use warp::filters::multipart::FormData;
 
 use crate::database::connection::get_client;
+use crate::database::models::image::{PaintingImage, PaintingImageCreate};
+use crate::errors::api_error::InternalServerError;
 use crate::requests::dto::generic_response::{GenericResponse, Status};
 use crate::utils::auth::token::{jwt_auth, Claims};
 use crate::config::load::{ConfigField, get};
@@ -23,8 +26,11 @@ struct FormDataRecord {
 #[derive(Debug, Serialize, Deserialize)]
 struct ImageMetaQuery {
 	pub preview: Option<bool>,
-	pub title: Option<String>,
-	pub alt: Option<String>
+	pub title_cs: Option<String>,
+	pub title_en: Option<String>,
+	pub alt_cs: Option<String>,
+	pub alt_en: Option<String>,
+	pub painting_id: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,8 +39,11 @@ struct ImageProcessData {
 	pub file_path: String,
 	pub size: usize,
 	pub preview: bool,
-	pub title: String,
-	pub alt: String,
+	pub title_cs: String,
+	pub title_en: String,
+	pub alt_cs: String,
+	pub alt_en: String,
+	pub painting_id: Uuid,
 }
 
 async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result<impl Reply, Rejection> {
@@ -53,8 +62,11 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 		file_path: String::from(""),
 		size: 0,
 		preview: params.preview.unwrap_or(false),
-		title: params.title.unwrap_or(String::from("")),
-		alt: params.alt.unwrap_or(String::from("")),
+		title_cs: params.title_cs.unwrap_or(String::from("")),
+		title_en: params.title_en.unwrap_or(String::from("")),
+		alt_cs: params.alt_cs.unwrap_or(String::from("")),
+		alt_en: params.alt_en.unwrap_or(String::from("")),
+		painting_id: params.painting_id
 	}));
 	let processed_data_clone = Arc::clone(&processed_data);
 
@@ -74,8 +86,8 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 			let file_path = match get::<String>(ConfigField::StaticFilesDir).await {
 				Ok(value) => Path::new(&value).join(format!("/images/{}", &file_name)),
 				Err(error) => {
-					error!(target: "api", "Creating file path failed - {}", error);
-					errors_move_nested_lock.push(format!("Creating file path failed - {}", error));
+					error!(target: "api", "image_create:path creating file path failed - {:?}", error);
+					errors_move_nested_lock.push(format!("Creating file path failed - {:?}", error));
 					return Ok(())
 				}
 			};
@@ -92,8 +104,8 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 						let _ = append_bytes(value.chunk(), file_path.to_str().expect("NO filepath specified"), true).await;
 					},
 					Err(error) => {
-						error!(target: "api", "Failed to process file chunk - {}", error);
-						errors_move_nested_lock.push(format!("Failed to process file chunk - {}", error));
+						error!(target: "api", "image_create:processing failed to process file chunk - {:?}", error);
+						errors_move_nested_lock.push(format!("Failed to process file chunk - {:?}", error));
 						return Ok(())
 					}
 				}
@@ -110,15 +122,42 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 
 	match processed {
 		Ok(_) => {
-			let response = GenericResponse::<Vec<FormDataRecord>> {
+			debug!(target: "api", "image_create:processing success")
+		},
+		Err(error) => {
+			error!(target: "api", "image_create:processing error - {:?}", error);
+			return Ok(warp::reply::with_status(warp::reply::json(&error_response), warp::http::StatusCode::INTERNAL_SERVER_ERROR))
+		}
+	};
+
+	let image_data = processed_data.lock().await;
+	let data = PaintingImageCreate {
+		preview: image_data.preview,
+		url: image_data.file_path.clone(),
+		alt_cs: image_data.alt_cs.clone(),
+		alt_en: image_data.alt_en.clone(),
+		title_cs: image_data.title_cs.clone(),
+		title_en: image_data.title_en.clone(),
+		painting_id: image_data.painting_id
+	};
+
+	let query = PaintingImage::create_query(data);
+	debug!(target: "api", "image_create:query - {}", &query);
+	let create_result = sqlx::query_as::<_, PaintingImage>(&query).fetch_one(&*client).await;
+
+	match create_result {
+		Ok(painting_image) => {
+			debug!(target: "api", "image_create:result - {:?}", &painting_image);
+			let response = GenericResponse::<PaintingImage> {
 				status: Status::Success,
-				message: "fileUploaded",
-				data: None,
+				message: "Painting image created successfully",
+				data: Some(painting_image),
 			};
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
 		},
-		Err(_) => {
-			Ok(warp::reply::with_status(warp::reply::json(&error_response), warp::http::StatusCode::INTERNAL_SERVER_ERROR))
+		Err(error) => {
+			error!(target: "api", "image_create:error - {:?}", error);
+			Ok(InternalServerError::new().response().await)
 		}
 	}
 }
@@ -127,7 +166,6 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 	warp::post()
 		.and(path("api"))
 		.and(path("v1.0"))
-		.and(path("paintings"))
 		.and(path("images"))
 		.and(path::end())
 		.and(query::<ImageMetaQuery>())
