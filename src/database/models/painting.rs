@@ -19,8 +19,11 @@ pub struct PaintingBase {
 	pub created: DateTime<Utc>,
 	pub deleted: Option<DateTime<Utc>>,
 	pub price: i64,
-	pub painting_title: Option<JsonValue>,
-	pub painting_description: Option<JsonValue>,
+	#[serde(deserialize_with = "deserialize_json_string")]
+	pub painting_title: Option<Translation>,
+	#[serde(deserialize_with = "deserialize_json_string")]
+	pub painting_description: Option<Translation>,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub data: Option<HashMap<String, String>>,
 	pub width: i64,
 	pub height: i64,
@@ -28,14 +31,27 @@ pub struct PaintingBase {
 
 impl <'r>FromRow<'r, PgRow> for PaintingBase {
 	fn from_row(row: &'r PgRow) -> sqlx::Result<Self, sqlx::Error> {
+		let title_json: JsonValue = row.try_get("painting_title")?;
+		let title: Translation = serde_json::from_value(title_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+		let description_json: JsonValue = row.try_get("painting_title")?;
+		let description: Translation = serde_json::from_value(description_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+		let data_json: JsonValue = row.try_get("painting_title")?;
+		let data: HashMap<String, String> = serde_json::from_value(data_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+
 		Ok(Self {
 			id: row.try_get("id")?,
 			created: row.try_get("created")?,
 			deleted: row.try_get("deleted").unwrap_or(None),
 			price: row.try_get("price")?,
-			painting_title: row.try_get("painting_title")?,
-			painting_description: row.try_get("painting_description")?,
-			data: None,
+			painting_title: Some(title),
+			painting_description: Some(description),
+			data: Some(data),
 			width: row.try_get("width")?,
 			height: row.try_get("height")?,
 		})
@@ -248,18 +264,18 @@ impl <'r>FromRow<'r, PgRow> for Painting {
 		let preview_json: JsonValue = row.try_get("preview")?;
 		let preview: PaintingImage = serde_json::from_value(preview_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-		debug!(target: "api", "parsed preview - {:?}", &preview);
 
 		let title_json: JsonValue = row.try_get("painting_title")?;
-		debug!(target: "api", "string title {}", &title_json);
 		let title: Translation = serde_json::from_value(title_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-		debug!(target: "api", "parsed title {:?}", &title);
 
 		let description_json: JsonValue = row.try_get("painting_description")?;
 		let description: Translation = serde_json::from_value(description_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-		debug!(target: "api", "parsed description {:?}", &description);
+
+		let data_json: JsonValue = row.try_get("painting_description")?;
+		let data: HashMap<String, String> = serde_json::from_value(data_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
 
 		Ok(Self {
 			id,
@@ -268,7 +284,7 @@ impl <'r>FromRow<'r, PgRow> for Painting {
 			price,
 			painting_title: Some(title),
 			painting_description: Some(description),
-			data: None,
+			data: Some(data),
 			width,
 			height,
 			preview: Json(preview)
