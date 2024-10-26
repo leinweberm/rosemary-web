@@ -1,16 +1,16 @@
-use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::postgres::PgRow;
 use sqlx::Row;
-use sqlx::types::Json;
+use sqlx::types::{Json, JsonValue};
 use uuid::Uuid;
 use std::collections::HashMap;
 use warp::Reply;
 use serde_json::json;
-use serde_json::Value as JsonValue;
+// use serde_json::Value as JsonValue;
 
-use crate::database::models::generics::Translation;
+use crate::database::models::generics::{Translation, deserialize_json_string};
 use crate::database::models::image::PaintingImage;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -76,8 +76,11 @@ pub struct Painting {
 	pub created: DateTime<Utc>,
 	pub deleted: Option<DateTime<Utc>>,
 	pub price: i64,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub painting_title: Option<Translation>,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub painting_description: Option<Translation>,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub data: Option<HashMap<String, String>>,
 	pub width: i64,
 	pub height: i64,
@@ -236,43 +239,39 @@ impl Reply for Painting {
 impl <'r>FromRow<'r, PgRow> for Painting {
 	fn from_row(row: &'r PgRow) -> sqlx::Result<Self> {
 		let id: Uuid = row.try_get("id")?;
-		let temp_created: String = row.try_get("created")?;
-		let naive_created = NaiveDateTime::parse_from_str(&temp_created, "%Y-%m-%dT%H:%M:%S")
-		.expect("Failed to parse naive datetime");
-		let created: DateTime<Utc> = TimeZone::from_utc_datetime(&Utc, &naive_created);
+		let created: DateTime<Utc> = row.try_get("created")?;
 		let price: i64 = row.try_get("price").unwrap_or(0);
 		let width: i64 = row.try_get("width").unwrap_or(0);
 		let height: i64 = row.try_get("height").unwrap_or(0);
 		let deleted = row.try_get("deleted").unwrap_or(None);
-		let preview: Json<PaintingImage> = row.try_get("preview")?;
 
-		let title_json: Option<&str> = row.try_get("painting_title")?;
-		let painting_title: Option<Translation> = match title_json
-			.map(|json| serde_json::from_str(json))
-			.transpose() {
-				Ok(title) => title,
-				Err(err) => return Err(sqlx::Error::Decode(Box::new(err)))
-			};
+		let preview_json: JsonValue = row.try_get("preview")?;
+		let preview: PaintingImage = serde_json::from_value(preview_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+		debug!(target: "api", "parsed preview - {:?}", &preview);
 
-		let description_json: Option<&str> = row.try_get("painting_description")?;
-		let painting_description: Option<Translation> = match description_json
-			.map(|json| serde_json::from_str(json))
-			.transpose() {
-				Ok(description) => description,
-				Err(err) => return Err(sqlx::Error::Decode(Box::new(err)))
-			};
+		let title_json: JsonValue = row.try_get("painting_title")?;
+		debug!(target: "api", "string title {}", &title_json);
+		let title: Translation = serde_json::from_value(title_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+		debug!(target: "api", "parsed title {:?}", &title);
+
+		let description_json: JsonValue = row.try_get("painting_description")?;
+		let description: Translation = serde_json::from_value(description_json)
+			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+		debug!(target: "api", "parsed description {:?}", &description);
 
 		Ok(Self {
 			id,
 			created,
 			deleted,
 			price,
-			painting_title,
-			painting_description,
+			painting_title: Some(title),
+			painting_description: Some(description),
 			data: None,
 			width,
 			height,
-			preview
+			preview: Json(preview)
 		})
 	}
 }

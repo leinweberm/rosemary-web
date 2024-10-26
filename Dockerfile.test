@@ -9,10 +9,8 @@ RUN cargo build --release
 FROM alpine:latest
 RUN apk add --no-cache libstdc++
 WORKDIR /usr/src/myapp
-VOLUME ["/app/static"]
 COPY --from=builder /usr/src/myapp/target/release/rosemary .
-COPY ./src/certs/root.crt .
-COPY .env .
+COPY .env.test .env
 EXPOSE 3030
-ENV RUST_LOG=api=error,database=error,app=error,cfg=error
+ENV RUST_LOG=app=debug,db=debug,cfg=debug,api=debug,fs=debug
 CMD ["./rosemary"]

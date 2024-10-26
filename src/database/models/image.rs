@@ -4,7 +4,7 @@ use sqlx::postgres::PgRow;
 use sqlx::Row;
 use uuid::Uuid;
 
-use crate::database::models::generics::Translation;
+use crate::database::models::generics::{Translation, deserialize_json_string};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PaintingImageCreate {
@@ -22,7 +22,9 @@ pub struct PaintingImage {
 	pub id: Uuid,
 	pub preview: bool,
 	pub url: String,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub alt: Option<Translation>,
+	#[serde(deserialize_with = "deserialize_json_string")]
 	pub title: Option<Translation>,
 	pub painting_id: Uuid,
 }

@@ -9,10 +9,6 @@ use std::sync::Arc;
 /// DatabaseUrl: String // postgres compatible connection string
 /// DatabaseCertPath: String // absolute path to root CA certificate
 /// StaticFilesDir: String // absolute path to serve static files from
-/// CacheClientPages: u8 // (minutes) controls html pages browser cache
-/// CacheClientStatic: u8 // (hours) controls static assets browser cache
-/// CacheMemoryPages: u8 // (minutes) controls in-memory Rust cache for html pages
-/// CacheMemoryGeneral: u8 // (seconds) controls in-memory Rust general purpose cache
 /// JwtSecret: String // for creating jwt keys
 /// RegisterUserSecret: String // verification that user is allowed to create another users
 /// DatabaseCertProvided: bool // does connection to database require certificate?
@@ -23,10 +19,6 @@ pub enum ConfigField {
 	DatabaseUrl,
 	DatabaseCertPath,
 	StaticFilesDir,
-	CacheClientPages,
-	CacheClientStatic,
-	CacheMemoryPages,
-	CacheMemoryGeneral,
 	JwtSecret,
 	RegisterUserSecret,
 	DatabaseCertProvided,
@@ -39,10 +31,6 @@ impl ConfigField {
 			ConfigField::DatabaseUrl => "database_url",
 			ConfigField::DatabaseCertPath => "database_cert_path",
 			ConfigField::StaticFilesDir => "static_files_dir",
-			ConfigField::CacheClientPages => "cache_client_pages",
-			ConfigField::CacheClientStatic => "cache_client_static",
-			ConfigField::CacheMemoryPages => "cache_memory_pages",
-			ConfigField::CacheMemoryGeneral => "cache_memory_general",
 			ConfigField::JwtSecret => "jwt_secret",
 			ConfigField::RegisterUserSecret => "register_user_secret",
 			ConfigField::DatabaseCertProvided => "database_cert_provided",
@@ -56,10 +44,6 @@ pub struct Config {
 	pub database_url: String,
 	pub database_cert_path: String,
 	pub static_files_dir: String,
-	pub cache_client_pages: u8,
-	pub cache_client_static: u8,
-	pub cache_memory_pages: u8,
-	pub cache_memory_general: u8,
 	pub jwt_secret: String,
 	pub register_user_secret: String,
 	pub database_cert_provided: bool,
@@ -72,10 +56,6 @@ impl Config {
 			ConfigField::DatabaseUrl => Box::new(self.database_url.clone()),
 			ConfigField::DatabaseCertPath => Box::new(self.database_cert_path.clone()),
 			ConfigField::StaticFilesDir => Box::new(self.static_files_dir.clone()),
-			ConfigField::CacheClientPages => Box::new(self.cache_client_pages),
-			ConfigField::CacheClientStatic => Box::new(self.cache_client_static),
-			ConfigField::CacheMemoryPages => Box::new(self.cache_memory_pages),
-			ConfigField::CacheMemoryGeneral => Box::new(self.cache_memory_general),
 			ConfigField::JwtSecret => Box::new(self.jwt_secret.clone()),
 			ConfigField::RegisterUserSecret => Box::new(self.register_user_secret.clone()),
 			ConfigField::DatabaseCertProvided => Box::new(self.database_cert_provided),
@@ -97,7 +77,6 @@ pub async fn init () -> Result<(), std::io::Error> {
 	dotenv().ok();
 	debug!(target: "cfg", ".env file loaded");
 	let missing_required_error = "is required config property";
-	let invalid_type_error = "should be type of";
 
 	let mut field = ConfigField::DatabaseUrl.to_str();
 	let database_url = env::var(&field)
@@ -110,34 +89,6 @@ pub async fn init () -> Result<(), std::io::Error> {
 	field = ConfigField::StaticFilesDir.to_str();
 	let static_files_dir = env::var(&field)
 		.expect(&format!("{} {}", &field, &missing_required_error));
-
-	field = ConfigField::CacheClientPages.to_str();
-	let temp_client_pages = env::var(&field)
-		.expect(&format!("{} {}", &field, &missing_required_error));
-	let cache_client_pages: u8 = temp_client_pages
-		.parse()
-		.expect(&format!("{} {} {}", &field, &invalid_type_error, "u8"));
-
-	field = ConfigField::CacheClientStatic.to_str();
-	let temp_client_static = env::var(&field)
-		.expect(&format!("{} {}", &field, &missing_required_error));
-	let cache_client_static: u8 = temp_client_static
-		.parse()
-		.expect(&format!("{} {} {}", &field, &invalid_type_error, "u8"));
-
-	field = ConfigField::CacheMemoryPages.to_str();
-	let temp_memory_pages = env::var(&field)
-		.expect(&format!("{} {}", &field, &missing_required_error));
-	let cache_memory_pages: u8 = temp_memory_pages
-		.parse()
-		.expect(&format!("{} {} {}", &field, &invalid_type_error, "u8"));
-
-	field = ConfigField::CacheMemoryGeneral.to_str();
-	let temp_memory_general = env::var(&field)
-		.expect(&format!("{} {}", &field, &missing_required_error));
-	let cache_memory_general = temp_memory_general
-		.parse()
-		.expect(&format!("{} {} {}", &field, &invalid_type_error, "u8"));
 
 	field = ConfigField::JwtSecret.to_str();
 	let jwt_secret = env::var(&field)
@@ -167,10 +118,6 @@ pub async fn init () -> Result<(), std::io::Error> {
 		database_url,
 		database_cert_path,
 		static_files_dir,
-		cache_client_pages,
-		cache_client_static,
-		cache_memory_pages,
-		cache_memory_general,
 		jwt_secret,
 		register_user_secret,
 		database_cert_provided,

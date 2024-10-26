@@ -1,4 +1,6 @@
 /target
+/static
 /certs/*
 src/certs/*
 .env
+.env.prod
