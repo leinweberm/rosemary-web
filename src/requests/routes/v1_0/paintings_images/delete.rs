@@ -14,13 +14,13 @@ async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap();
 
 	let query = PaintingImage::get_by_id_query(id);
-	debug!(target: "api", "image_delete:query - {}", &query);
+	debug!(target: "db", "images:delete PaintingImage::get_by_id_query {}", &query);
 	let find_image = sqlx::query_as::<_, PaintingImage>(&query).fetch_one(&*client).await;
 
 	let image = match find_image {
 		Ok(row) => row,
 		Err(error) => {
-			error!(target: "api", "image_delete:error - get image data from database {:?}", error);
+			error!(target: "api", "images:delete - get image data from database {:?}", error);
 			return Ok(InternalServerError::new().response().await)
 		}
 	};
@@ -29,18 +29,18 @@ async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 		Ok(static_dir_path) => {
 			if let Some(pos) = image.url.rfind('/') {
 				let file_name = &image.url[pos + 1..];
-				Path::new(&static_dir_path).join(format!("/images/{}", file_name))
+				Path::new(&static_dir_path).join(format!("images/{}", file_name))
 			} else {
-				error!(target: "api", "image_delete:error filename not found");
+				error!(target: "api", "images:delete error filename not found");
 				return Ok(InternalServerError::new().response().await)
 			}
 		},
 		Err(error) => {
-			error!(target: "api", "image_delete:error generate file path - {:?}", error);
+			error!(target: "api", "images:delete error generate file path {:?}", error);
 			return Ok(InternalServerError::new().response().await)
 		}
 	};
-	debug!(target: "api", "image_delete:path - {:?}", &file_path);
+	debug!(target: "api", "images:delete path {:?}", &file_path);
 
 	if let Some(path) = file_path.to_str() {
 		let removed = remove_file(path).await;
@@ -50,15 +50,15 @@ async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 	}
 
 	let delete_query = PaintingImage::delete_query(id);
-	debug!(target: "api", "image_delete:query - {}", &delete_query);
-	let removed_row = sqlx::query(&delete_query).fetch_one(&*client).await;
+	debug!(target: "api", "images:delete PaintingImage::delete_query {}", &delete_query);
+	let removed_row = sqlx::query(&delete_query).fetch_optional(&*client).await;
 
 	match removed_row {
 		Ok(_) => {
-			debug!(target: "api", "image_delete:result OK");
+			debug!(target: "api", "images:delete result OK");
 		},
 		Err(error) => {
-			error!(target: "api", "image_delete:error - {:?}", error);
+			error!(target: "api", "images:delete error {:?}", error);
 			return Ok(InternalServerError::new().response().await)
 		}
 	}

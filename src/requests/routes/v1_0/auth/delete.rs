@@ -3,17 +3,35 @@ use uuid::Uuid;
 
 use crate::database::connection::get_client;
 use crate::database::models::user::{User, UserDelete};
-use crate::errors::api_error::InternalServerError;
+use crate::errors::api_error::{InternalServerError, UnauthorizedError};
 use crate::requests::dto::generic_response::{Status, GenericResponse};
 use crate::utils::auth::token::{jwt_auth, Claims};
+use crate::config::load::{ConfigField, get};
 
 async fn delete_user(user_id: Uuid, params: UserDelete) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "user_delete:client - database client aquired");
-	debug!(target: "api", "user_delete:data - user_id: {} force: {}", &user_id, &params.force);
+	debug!(target: "api", "users:delete - database client aquired");
+	debug!(target: "api", "users:delete data - user_id: {} force: {}", &user_id, &params.force);
+
+	let register_secret = match get::<String>(ConfigField::RegisterUserSecret).await {
+		Ok(value) => {
+			debug!(target: "api", "users:delete - register secret {}", &value);
+			value
+		},
+		Err(error) => {
+			error!(target: "api", "users:delete - error when getting secret {}", error);
+			return Ok(UnauthorizedError::new().response().await)
+		}
+	};
+
+	if params.secret != register_secret {
+		error!(target: "api", "users:delete - provided secret is invalid!");
+		return Ok(UnauthorizedError::new().response().await)
+	}
 
 	let query = User::delete_query(user_id, params.force);
-	let deleted = sqlx::query(&query).fetch_one(&client).await;
+	debug!(target: "db", "users:delete User::delete_query {}", &query);
+	let deleted = sqlx::query(&query).fetch_optional(&client).await;
 
 	match deleted {
 		Ok(_) => {
@@ -25,7 +43,7 @@ async fn delete_user(user_id: Uuid, params: UserDelete) -> Result<impl Reply, Re
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::OK))
 		},
 		Err(error) => {
-			error!(target: "api", "Failed to delete user {}", error);
+			error!(target: "api", "users:delete - failed to delete user {}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}

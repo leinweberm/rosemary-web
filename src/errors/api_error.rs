@@ -1,17 +1,13 @@
 #![allow(dead_code)]
 use std::error::Error;
 use serde::Serialize;
-use warp::reject::Rejection;
+use warp::reject::{InvalidQuery, MissingHeader, Rejection};
+use warp::body::BodyDeserializeError;
 use warp::reject;
 use warp::http::StatusCode;
 use warp::reply::WithStatus;
 
 use crate::requests::dto::generic_response::{GenericResponse, Status};
-
-pub enum ApiErrors {
-	UnauthorizedError,
-	ValidationError
-}
 
 /// # UnauthorizedError
 #[derive(Debug, Serialize)]
@@ -191,11 +187,16 @@ pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Reje
 	} else if let Some(token_expired_error) = error.find::<TokenExpiredError>() {
 		return Ok(token_expired_error.response().await)
 
-	} else if let Some(_) = error.find::<warp::reject::MethodNotAllowed>() {
-		response.message = "methodNotAllowed";
-		return Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::METHOD_NOT_ALLOWED))
+	} else if let Some(missing_header_error) = error.find::<MissingHeader>() {
+		let message = String::from(format!("{}", missing_header_error));
+		return Ok(ValidationError::new(Some(&message)).response().await)
 
-	} else if let Some(body_deserialize_error) = error.find::<warp::filters::body::BodyDeserializeError>() {
+	} else if let Some(invalid_query_error) = error.find::<InvalidQuery>() {
+		let message = String::from(format!("{}", invalid_query_error));
+		return Ok(ValidationError::new(Some(&message)).response().await)
+
+	} else if let Some(body_deserialize_error) = error.find::<BodyDeserializeError>() {
+		debug!(target: "api", "body error {}", &body_deserialize_error);
 		match body_deserialize_error.source() {
 			Some(cause) => {
 				error!(target: "api", "BodyDeserializeError - {:?}", cause);
@@ -212,6 +213,10 @@ pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Reje
 				return Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::BAD_REQUEST))
 			},
 		}
+
+	} else if let Some(_) = error.find::<warp::reject::MethodNotAllowed>() {
+		response.message = "methodNotAllowed";
+		return Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::METHOD_NOT_ALLOWED))
 	}
 
 	Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::INTERNAL_SERVER_ERROR))

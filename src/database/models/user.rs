@@ -69,7 +69,7 @@ impl <'r>FromRow<'r, PgRow> for User {
 impl User {
 	pub fn create_query(data: UserCreate) -> String {
 		format!(r#"
-			INSERT INTO rosemary.users(
+			INSERT INTO network.users(
 				role_type,
 				username,
 				password,
@@ -89,7 +89,7 @@ impl User {
 	pub fn get_by_id_query(user_uid: Uuid) -> String {
 		format!(r#"
 			SELECT *
-			FROM rosemary.users
+			FROM network.users
 			WHERE user_uid = '{}'
 				AND deleted IS NULL
 		"#, user_uid)
@@ -98,7 +98,7 @@ impl User {
 	pub fn get_by_username_query(username: String) -> String {
 		format!(r#"
 			SELECT *
-			FROM rosemary.users
+			FROM network.users
 			WHERE username = '{}'
 				AND deleted IS NULL
 		"#, username)
@@ -107,12 +107,12 @@ impl User {
 	pub fn delete_query(user_uid: Uuid, force: bool) -> String {
 		if force == true {
 			format!(r#"
-				DELETE FROM rosemary.users
+				DELETE FROM network.users
 				WHERE user_uid = '{}'
 			"#, user_uid)
 		} else {
 			format!(r#"
-				UPDATE rosemary.users
+				UPDATE network.users
 				SET deleted = TRUE
 				WHERE user_uid = '{}'
 			"#, user_uid)

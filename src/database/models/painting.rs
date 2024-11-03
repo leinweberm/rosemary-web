@@ -8,7 +8,6 @@ use uuid::Uuid;
 use std::collections::HashMap;
 use warp::Reply;
 use serde_json::json;
-// use serde_json::Value as JsonValue;
 
 use crate::database::models::generics::{Translation, deserialize_json_string};
 use crate::database::models::image::PaintingImage;
@@ -35,14 +34,13 @@ impl <'r>FromRow<'r, PgRow> for PaintingBase {
 		let title: Translation = serde_json::from_value(title_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
 
-		let description_json: JsonValue = row.try_get("painting_title")?;
+		let description_json: JsonValue = row.try_get("painting_description")?;
 		let description: Translation = serde_json::from_value(description_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
 
-		let data_json: JsonValue = row.try_get("painting_title")?;
+		let data_json: JsonValue = row.try_get("data")?;
 		let data: HashMap<String, String> = serde_json::from_value(data_json)
 			.map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-
 
 		Ok(Self {
 			id: row.try_get("id")?,
@@ -118,8 +116,8 @@ impl Painting {
 				)) AS preview
 				FROM rosemary.paintings p
 				LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
-				WHERE id = {}
-					AND deleted IS NULL
+				WHERE p.id = '{}'
+					AND p.deleted IS NULL
 				LIMIT 1
 		"#, id)
 	}
@@ -175,7 +173,7 @@ impl Painting {
 					'cs', '{}',
 					'en', '{}'
 				),
-				NULL,
+				JSON_BUILD_OBJECT(),
 				{},
 				{}
 			)
@@ -192,35 +190,56 @@ impl Painting {
 
 	pub fn update_query(id: Uuid, data: PaintingUpdate) -> String {
 		let mut values: Vec<String> = Vec::new();
-		let mut query = String::from("UPDATE rosemary.paintings ");
+		let mut query = String::from("UPDATE rosemary.paintings SET ");
 
 		if let Some(value) = data.price {
 			values.push(format!("price = {}", value));
 		}
-		if let Some(value) = data.title_cs {
-			values.push(format!("JSONB_SET(painting_title::jsonb, '{{cs}}', '{}', true)", value));
+
+		if let (Some(cs), Some(en)) = (data.title_cs.as_ref(), data.title_en.as_ref()) {
+			values.push(format!(
+				"painting_title = JSONB_SET(JSONB_SET(painting_title::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
+				cs,
+				en
+			));
+		} else if let Some(value) = data.title_cs {
+			values.push(format!(
+				"painting_title = JSONB_SET(painting_title::jsonb, '{{cs}}', '\"{}\"', true)",
+				value
+			));
+		} else if let Some(value) = data.title_en {
+			values.push(format!(
+				"painting_title = JSONB_SET(painting_title::jsonb, '{{en}}', '\"{}\"', true)",
+				value
+			));
 		}
-		if let Some(value) = data.title_en {
-			values.push(format!("JSONB_SET(painting_title::jsonb, '{{en}}', '{}', true)", value));
+
+		if let (Some(cs), Some(en)) = (data.description_cs.as_ref(), data.description_en.as_ref()) {
+			values.push(format!(
+				"painting_description = JSONB_SET(JSONB_SET(painting_description::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
+				cs,
+				en
+			));
+		} else if let Some(value) = data.description_cs {
+			values.push(format!("painting_description = JSONB_SET(painting_description::jsonb, '{{cs}}', '\"{}\"', true)", value));
+		} else if let Some(value) = data.description_en {
+			values.push(format!("painting_description = JSONB_SET(painting_description::jsonb, '{{en}}', '\"{}\"', true)", value));
 		}
-		if let Some(value) = data.description_cs {
-			values.push(format!("JSONB_SET(painting_description::jsonb, '{{cs}}', '{}', true)", value));
-		}
-		if let Some(value) = data.description_en {
-			values.push(format!("JSONB_SET(painting_description::jsonb, '{{en}}', '{}', true)", value));
-		}
+
 		if let Some(value) = data.height {
 			values.push(format!("height = {}", value));
 		}
+
 		if let Some(value) = data.width {
 			values.push(format!("width = {}", value));
 		}
+
 		if let Some(value) = data.sold {
-			values.push(format!("JSONB_SET(data::jsonb, '{{sold}}', {}, true)", value));
+			values.push(format!("data = JSONB_SET(data::jsonb, '{{sold}}', {}, true)", value));
 		}
 
 		query.push_str(&values.join(", "));
-		query.push_str(&format!(" WHERE id = '{}'", id));
+		query.push_str(&format!(" WHERE id = '{}' AND deleted IS NULL RETURNING *;", id));
 		query
 	}
 
@@ -235,20 +254,20 @@ impl Painting {
 
 impl Reply for Painting {
 	fn into_response(self) -> warp::reply::Response {
-	    let json = json!({
-				"id": self.id,
-				"created": self.created,
-				"deleted": self.deleted,
-				"price": self.price,
-				"painting_title": self.painting_title,
-				"painting_description": self.painting_description,
-				"data": self.data,
-				"width": self.width,
-				"height": self.height,
-				"preview": self.preview,
-			});
+		let json = json!({
+			"id": self.id,
+			"created": self.created,
+			"deleted": self.deleted,
+			"price": self.price,
+			"painting_title": self.painting_title,
+			"painting_description": self.painting_description,
+			"data": self.data,
+			"width": self.width,
+			"height": self.height,
+			"preview": self.preview,
+		});
 
-			warp::reply::json(&json).into_response()
+		warp::reply::json(&json).into_response()
 	}
 }
 

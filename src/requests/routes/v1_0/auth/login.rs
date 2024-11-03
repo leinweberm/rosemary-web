@@ -11,22 +11,25 @@ use crate::utils::auth::token::create;
 
 async fn user_login(data: UserLogin) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "user_login:client - database client aquired");
-	debug!(target: "api", "user_login:data - {:?}", &data);
+	debug!(target: "api", "users:login - database client aquired");
+	debug!(target: "api", "users:login - data {:?}", &data);
 
 	let duration = rand::thread_rng().gen_range(10..101);
 	sleep(Duration::from_millis(duration)).await;
 
 	let query = User::get_by_username_query(data.username);
-	debug!(target: "api", "user_login:query - {}", &query);
+	debug!(target: "db", "users:login - User::get_by_username_query {}", &query);
 	let find_user = sqlx::query_as::<_, User>(&query)
 		.fetch_one(&client)
 		.await;
 
 	let user = match find_user {
-		Ok(value) => value,
+		Ok(value) => {
+			debug!(target: "api", "users:login user {:?}", &value);
+			value
+		},
 		Err(error) => {
-			error!(target: "api", "Failed to get user from database - {}", error);
+			error!(target: "api", "users:login failed to get user from database {}", error);
 			return Ok(UnauthorizedError::new().response().await)
 		}
 	};
@@ -35,7 +38,7 @@ async fn user_login(data: UserLogin) -> Result<impl Reply, Rejection> {
 	let valid_password = match password_validation {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "api", "Password verification failed - {}", error);
+			error!(target: "api", "users:login password verification failed {}", error);
 			return Ok(UnauthorizedError::new().response().await)
 		}
 	};
@@ -52,7 +55,7 @@ async fn user_login(data: UserLogin) -> Result<impl Reply, Rejection> {
 				Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::OK))
 			},
 			Err(error) => {
-				error!(target: "api", "Failed to create JWT token {:?}", error);
+				error!(target: "api", "users:login failed to create JWT token {:?}", error);
 				Ok(UnauthorizedError::new().response().await)
 			}
 		}
@@ -65,7 +68,7 @@ pub fn login() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 	warp::post()
 		.and(path("api"))
 		.and(path("v1.0"))
-		.and(path("user"))
+		.and(path("users"))
 		.and(path("login"))
 		.and(path::end())
 		.and(body::content_length_limit(1024 * 1024))

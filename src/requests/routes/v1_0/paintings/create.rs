@@ -8,16 +8,16 @@ use crate::utils::auth::token::{jwt_auth, Claims};
 
 async fn create_painting(data: PaintingCreate) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "paintings_create:client - database client aquired");
-	debug!(target: "api", "paintings_create:data - {:?}", &data);
+	debug!(target: "api", "paintings:create - database client aquired");
+	debug!(target: "api", "paintings:create - data {:?}", &data);
 
 	let query = Painting::create_query(data);
-	debug!(target: "api", "paitings_create:query - {}", &query);
+	debug!(target: "db", "paitings:create - Painting::create_query {}", &query);
 	let create_result = sqlx::query_as::<_, PaintingBase>(&query).fetch_one(&client).await;
 
 	match create_result {
 		Ok(painting) => {
-			debug!(target: "api", "paintings_create:result - {:?}", &painting);
+			debug!(target: "api", "paintings:create - result {:?}", &painting);
 			let response = GenericResponse::<PaintingBase> {
 				status: Status::Success,
 				message: "Painting created successfully",
@@ -26,7 +26,7 @@ async fn create_painting(data: PaintingCreate) -> Result<impl Reply, Rejection> 
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
 		}
 		Err(error) => {
-			error!(target: "api", "paintings_create:error - {:?}", error);
+			error!(target: "api", "paintings:create - error {:?}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}

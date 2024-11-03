@@ -34,7 +34,7 @@ impl PaintingImage {
 		format!(r#"
 			SELECT *
 			FROM rosemary.painting_images pi
-			WHERE pi.painting_id = {}
+			WHERE pi.painting_id = '{}'
 		"#, id)
 	}
 
@@ -80,7 +80,7 @@ impl PaintingImage {
 
 	pub fn delete_query(id: Uuid) -> String {
 		format!(r#"
-			DELETE FROM rosemary.paintin_images
+			DELETE FROM rosemary.painting_images
 			WHERE id = '{}'
 			LIMIT 1
 		"#, id)

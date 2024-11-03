@@ -41,7 +41,7 @@ impl JwtKeys {
 
 pub async fn set_keys() -> Result<JwtKeys, Error> {
 	let config_jwt_secret = get::<String>(ConfigField::JwtSecret).await?;
-	debug!(target: "auth", "loaded jwt secret from config {}", &config_jwt_secret);
+	debug!(target: "auth", "jwt:keys secret from config {}", &config_jwt_secret);
 	let secret = config_jwt_secret.as_bytes().to_vec();
 	let keys = JwtKeys::new(&secret);
 	let _ = JWT_KEYS.set(keys.clone());
@@ -49,10 +49,10 @@ pub async fn set_keys() -> Result<JwtKeys, Error> {
 }
 
 pub async fn get_keys() -> Result<&'static JwtKeys, Error> {
-	debug!(target: "auth", "getting static jwt keys reference");
+	debug!(target: "auth", "jwt:keys - getting static jwt keys reference");
 	JWT_KEYS
 		.get()
-		.ok_or_else(||Error::new(std::io::ErrorKind::Other, ">JWT keys do not exist"))
+		.ok_or_else(||Error::new(std::io::ErrorKind::Other, "JWT keys do not exist"))
 }
 
 pub async fn encode_token(user_id: &str, expiration_in_seconds: usize, secret: &JwtKeys) -> Result<String, Rejection> {
@@ -72,7 +72,7 @@ pub async fn encode_token(user_id: &str, expiration_in_seconds: usize, secret: &
 	let uid = match user_id.parse::<Uuid>() {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "auth", "Failed to parse User Id {}", error);
+			error!(target: "auth", "jwt:encode - failed to parse User Id {}", error);
 			return Err(warp::reject::custom(UnauthorizedError::new()))
 		}
 	};
@@ -85,7 +85,7 @@ pub async fn encode_token(user_id: &str, expiration_in_seconds: usize, secret: &
 	let token = match encode(&Header::default(), &claims, &secret.encoding) {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "auth", "Failed to encode JWT token {}", error);
+			error!(target: "auth", "jwt:encode- failed to encode JWT token {}", error);
 			return Err(warp::reject::custom(UnauthorizedError::new()))
 		}
 	};
@@ -101,7 +101,7 @@ pub async fn create(user_id: &str, expiration_in_seconds: usize) -> Result<Strin
 	let secret = match get_keys().await {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "auth", "Failed to get JWT secrets {}", error);
+			error!(target: "auth", "jwt:encode - failed to get JWT secrets {}", error);
 			return Err(warp::reject::custom(UnauthorizedError::new()))
 		}
 	};
@@ -135,7 +135,7 @@ pub async fn decode_token(token: String, secret: &JwtKeys) -> Result<Claims, Rej
 			Ok(token_data.claims)
 		},
 		Err(error) => {
-			error!(target: "auth", "Failed to decode JWT token {}", error);
+			error!(target: "auth", "jwt:decode - failed to decode JWT token {}", error);
 			Err(warp::reject::custom(UnauthorizedError::new()))
 		}
 	}
@@ -145,7 +145,7 @@ pub async fn verify(token: String) -> Result<Claims, Rejection> {
 	let secret = match get_keys().await {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "auth", "Failed to get JWT secrets {}", error);
+			error!(target: "auth", "jwt:decore - failed to get JWT secrets {}", error);
 			return Err(warp::reject::custom(InternalServerError::new()))
 		}
 	};
@@ -165,7 +165,7 @@ pub async fn verify(token: String) -> Result<Claims, Rejection> {
 					}
 				},
 				Err(error) => {
-					error!(target: "auth", "Failed to find user - {}", error);
+					error!(target: "auth", "jwt:decode - failed to find user - {}", error);
 					return Err(warp::reject::custom(UnauthorizedError::new()))
 				}
 			}

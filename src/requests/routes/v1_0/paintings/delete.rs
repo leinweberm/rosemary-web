@@ -12,16 +12,12 @@ async fn delete_painting(
 	params: PaintingDelete
 ) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "painting_delete:client - database client aquired");
-	debug!(
-		target: "api",
-		"painting_delete:data - painting_uid: {}, force: {}",
-		&painting_uid,
-		&params.force
-	);
+	debug!(target: "api", "paintings:delete - database client aquired");
+	debug!(target: "api", "paintings:delete - painting_uid: {}, force: {}", &painting_uid, &params.force);
 
 	let query = Painting::delete_query(painting_uid, params);
-	let deleted = sqlx::query(&query).fetch_one(&client).await;
+	debug!(target: "db", "paintings:delete - Painting::delete_query {}", &query);
+	let deleted = sqlx::query(&query).fetch_optional(&client).await;
 
 	match deleted {
 		Ok(_) => {
@@ -33,7 +29,7 @@ async fn delete_painting(
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::OK))
 		},
 		Err(error) => {
-			error!(target: "api", "Failed to delete painting {}", error);
+			error!(target: "api", "paintings:delete - failed to delete painting {}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}

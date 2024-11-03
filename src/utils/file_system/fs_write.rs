@@ -5,20 +5,38 @@ use tokio::io::AsyncWriteExt;
 use tokio::fs::OpenOptions;
 
 pub async fn write_bytes(data: &[u8], file_path: &str) -> io::Result<()> {
-    let mut file = File::create(file_path).await?;
-    file.write_all(data).await?;
-    Ok(())
+	let mut file = File::create(file_path).await?;
+	file.write_all(data).await?;
+	Ok(())
 }
 
 pub async fn append_bytes(data: &[u8], file_path: &str, create_file: bool) -> io::Result<()> {
-    let mut file = OpenOptions::new()
-        .append(true)
-        .create(create_file)
-        .open(file_path)
-        .await?;
+	debug!(target: "app", "fs:write append_bytes file {} on path {}", &create_file, &file_path);
+	let mut file = OpenOptions::new()
+		.append(true)
+		.create(create_file)
+		.open(file_path)
+		.await?;
 
-    file.write_all(data).await?;
-    Ok(())
+	match file.write_all(data).await {
+		Ok(_value) => {
+			debug!(target: "app", "fs:write append_bytes succesfull appending");
+			match file.flush().await {
+				Ok(_flush) => {
+					debug!(target: "app", "fs:write append_bytes flush succesfull");
+					Ok(())
+				},
+				Err(error) => {
+					error!(target: "app", "fs:write appen_bytes flush {}", error);
+					Err(error)
+				}
+			}
+		},
+		Err(error) => {
+			error!(target: "app", "fs:write append_bytes failed {}", error);
+			Err(error)
+		}
+	}
 }
 
 #[cfg(test)]

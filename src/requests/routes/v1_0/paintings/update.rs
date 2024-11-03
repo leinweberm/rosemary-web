@@ -12,16 +12,16 @@ async fn update_painting(
 	data: PaintingUpdate
 ) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "painting_update:client - database client aquired");
-	debug!(target: "api", "painting_update:data - {:?}", &data);
+	debug!(target: "api", "paintings:update - database client aquired");
+	debug!(target: "api", "paintings:update - data {:?}", &data);
 
 	let query = Painting::update_query(painting_uid, data);
-	debug!(target: "api", "painting_update:query - {}", &query);
+	debug!(target: "db", "paintings:update - Painting::update_query {}", &query);
 	let update_result = sqlx::query_as::<_, PaintingBase>(&query).fetch_one(&client).await;
 
 	match update_result {
 		Ok(painting) => {
-			debug!(target: "api", "painting_update:result - {:?}", &painting);
+			debug!(target: "api", "paintings:update - result {:?}", &painting);
 			let response = GenericResponse::<PaintingBase> {
 				status: Status::Success,
 				message: "Painting updated successfully",
@@ -33,7 +33,7 @@ async fn update_painting(
 			)
 		},
 		Err(error) => {
-			error!(target: "api", "painting_update:error - {:?}", error);
+			error!(target: "api", "paintings:update - error {:?}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}

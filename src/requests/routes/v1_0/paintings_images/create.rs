@@ -83,11 +83,15 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 			let mut process_data_move_nested_lock = process_data_move_nested_clone.lock().await;
 
 			let file_name: &str = field.filename().unwrap_or("unknown");
+			debug!(target: "api", "images:create - file_name {}", &file_name);
 			let file_path = match get::<String>(ConfigField::StaticFilesDir).await {
-				Ok(value) => Path::new(&value).join(format!("/images/{}", &file_name)),
+				Ok(value) => {
+					debug!(target: "api", "images:create - config file path {}", &value);
+					Path::new(&value).join(format!("images/{}", &file_name))
+				},
 				Err(error) => {
-					error!(target: "api", "image_create:path creating file path failed - {:?}", error);
-					errors_move_nested_lock.push(format!("Creating file path failed - {:?}", error));
+					error!(target: "api", "images:create - path creating file path failed {:?}", error);
+					errors_move_nested_lock.push(format!("Creating file path failed {:?}", error));
 					return Ok(())
 				}
 			};
@@ -101,11 +105,12 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 				match content {
 					Ok(value) => {
 						process_data_move_nested_lock.size += value.chunk().len();
+						debug!(target: "api", "images:create path {:?} data chunk processing", &file_path.to_str());
 						let _ = append_bytes(value.chunk(), file_path.to_str().expect("NO filepath specified"), true).await;
 					},
 					Err(error) => {
-						error!(target: "api", "image_create:processing failed to process file chunk - {:?}", error);
-						errors_move_nested_lock.push(format!("Failed to process file chunk - {:?}", error));
+						error!(target: "api", "images:create - processing failed to process file chunk {:?}", error);
+						errors_move_nested_lock.push(format!("Failed to process file chunk {:?}", error));
 						return Ok(())
 					}
 				}
@@ -122,10 +127,10 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 
 	match processed {
 		Ok(_) => {
-			debug!(target: "api", "image_create:processing success")
+			debug!(target: "api", "images:create - processing success")
 		},
 		Err(error) => {
-			error!(target: "api", "image_create:processing error - {:?}", error);
+			error!(target: "api", "images:create - processing error {:?}", error);
 			return Ok(warp::reply::with_status(warp::reply::json(&error_response), warp::http::StatusCode::INTERNAL_SERVER_ERROR))
 		}
 	};
@@ -142,12 +147,12 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 	};
 
 	let query = PaintingImage::create_query(data);
-	debug!(target: "api", "image_create:query - {}", &query);
+	debug!(target: "db", "images:create - PaintingImage::create_query - {}", &query);
 	let create_result = sqlx::query_as::<_, PaintingImage>(&query).fetch_one(&*client).await;
 
 	match create_result {
 		Ok(painting_image) => {
-			debug!(target: "api", "image_create:result - {:?}", &painting_image);
+			debug!(target: "api", "images:create - result {:?}", &painting_image);
 			let response = GenericResponse::<PaintingImage> {
 				status: Status::Success,
 				message: "Painting image created successfully",
@@ -156,7 +161,7 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
 		},
 		Err(error) => {
-			error!(target: "api", "image_create:error - {:?}", error);
+			error!(target: "api", "images:create - error {:?}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}

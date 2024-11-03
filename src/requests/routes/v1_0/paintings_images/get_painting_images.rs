@@ -7,12 +7,12 @@ async fn get_painting_images(id: Uuid) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap();
 
 	let query = PaintingImage::get_all_for_query(id);
-	debug!(target: "api", "image_get_all:query - {}", &query);
+	debug!(target: "api", "images:get_all PaintingImage::get_all_for_query {}", &query);
 	let images_found = sqlx::query_as::<_, PaintingImage>(&query).fetch_all(&*client).await;
 
 	match images_found {
 		Ok(rows) => {
-			debug!(target: "api", "image_get_all:result OK");
+			debug!(target: "api", "images:get_all result OK");
 			let response = GenericResponse::<Vec<PaintingImage>> {
 				status: Status::Success,
 				message: "All images for selected painting",
@@ -21,7 +21,7 @@ async fn get_painting_images(id: Uuid) -> Result<impl Reply, Rejection> {
 			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::OK))
 		},
 		Err(error) => {
-			error!(target: "api", "image_get_all:error - {:?}", error);
+			error!(target: "api", "imaages:get_all failed {:?}", error);
 			Ok(InternalServerError::new().response().await)
 		}
 	}
