@@ -115,7 +115,7 @@ impl Painting {
 					'painting_id', pi.painting_id
 				)) AS preview
 				FROM rosemary.paintings p
-				LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
+				LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE AND pi.status = 'PROCESSED'
 				WHERE p.id = '{}'
 					AND p.deleted IS NULL
 				LIMIT 1
@@ -123,11 +123,11 @@ impl Painting {
 	}
 
 	pub fn count_all_query() -> String {
-		format!(r#"
+		r#"
 			SELECT COUNT(p.id)
 			FROM rosemary.paintings p
 			WHERE p.deleted IS NULL
-		"#)
+		"#.to_string()
 	}
 
 	pub fn get_all_query(limit: u32, offset: u32) -> String {

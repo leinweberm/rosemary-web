@@ -54,7 +54,7 @@ pub fn delete() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and(path("api"))
 		.and(path("v1.0"))
 		.and(path("users"))
-		.and(warp::path::param::<Uuid>())
+		.and(path::param::<Uuid>())
 		.and(path::end())
 		.and(query::<UserDelete>())
 		.and(jwt_auth())

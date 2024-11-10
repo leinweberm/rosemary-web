@@ -96,7 +96,7 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 		.and(path("api"))
 		.and(path("v1.0"))
 		.and(path("paintings"))
-		.and(warp::path::param::<Uuid>())
+		.and(path::param::<Uuid>())
 		.and(path::end())
 		.map(|uuid: Uuid| {
 			debug!(target: "api", "Route matched with UUID: {}", uuid);  // Debug print

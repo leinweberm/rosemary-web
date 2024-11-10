@@ -12,7 +12,7 @@ async fn update_painting(
 	data: PaintingUpdate
 ) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "paintings:update - database client aquired");
+	debug!(target: "api", "paintings:update - database client acquired");
 	debug!(target: "api", "paintings:update - data {:?}", &data);
 
 	let query = Painting::update_query(painting_uid, data);

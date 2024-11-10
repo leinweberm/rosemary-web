@@ -58,7 +58,7 @@ impl TokenExpiredError {
 	}
 
 	pub async fn response(&self) -> WithStatus<warp::reply::Json> {
-		let response = GenericResponse::<UnauthorizedError> {
+		let response = GenericResponse::<TokenExpiredError> {
 			status: self.status,
 			message: &self.message,
 			data: None
@@ -160,6 +160,34 @@ impl InternalServerError {
 
 impl reject::Reject for InternalServerError {}
 
+#[derive(Debug, Serialize)]
+pub struct ImageResizeError {
+	status: Status,
+	#[serde(skip_serializing)]
+	status_code: StatusCode,
+	message: String
+}
+impl ImageResizeError {
+	pub fn new() -> Self {
+		Self {
+			status: Status::Error,
+			status_code: StatusCode::INTERNAL_SERVER_ERROR,
+			message: String::from("imageResizeFailed")
+		}
+	}
+
+	pub async fn response(&self) -> WithStatus<warp::reply::Json> {
+		let response = GenericResponse::<ImageResizeError> {
+			status: self.status,
+			message: &self.message,
+			data: None
+		};
+		warp::reply::with_status(warp::reply::json(&response), self.status_code)
+	}
+}
+
+impl reject::Reject for ImageResizeError {}
+
 pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Rejection> {
 	error!(target: "api", "request error - {:?}", error);
 	let mut response = GenericResponse::<()> {
@@ -197,24 +225,24 @@ pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Reje
 
 	} else if let Some(body_deserialize_error) = error.find::<BodyDeserializeError>() {
 		debug!(target: "api", "body error {}", &body_deserialize_error);
-		match body_deserialize_error.source() {
+		return match body_deserialize_error.source() {
 			Some(cause) => {
 				error!(target: "api", "BodyDeserializeError - {:?}", cause);
 				let msg = format!("validationError - {}", cause);
-        let validation_error = GenericResponse::<()> {
+				let validation_error = GenericResponse::<()> {
 					status: Status::Error,
 					message: &msg,
 					data: None
 				};
-				return Ok(warp::reply::with_status(warp::reply::json(&validation_error), StatusCode::BAD_REQUEST))
+				Ok(warp::reply::with_status(warp::reply::json(&validation_error), StatusCode::BAD_REQUEST))
 			},
 			None => {
 				response.message = "badRequest";
-				return Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::BAD_REQUEST))
+				Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::BAD_REQUEST))
 			},
 		}
 
-	} else if let Some(_) = error.find::<warp::reject::MethodNotAllowed>() {
+	} else if let Some(_) = error.find::<reject::MethodNotAllowed>() {
 		response.message = "methodNotAllowed";
 		return Ok(warp::reply::with_status(warp::reply::json(&response), StatusCode::METHOD_NOT_ALLOWED))
 	}

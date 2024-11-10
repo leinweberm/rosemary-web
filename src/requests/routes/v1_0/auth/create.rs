@@ -10,7 +10,7 @@ use crate::config::load::{ConfigField, get};
 use crate::utils::auth::password::hash_password;
 
 async fn user_create(mut data: UserCreate) -> Result<impl Reply, Rejection> {
-	debug!(target: "api", "users:create - starting the proccess");
+	debug!(target: "api", "users:create - starting the process");
 	let duration = rand::thread_rng().gen_range(10..101);
 	sleep(Duration::from_millis(duration)).await;
 
@@ -31,7 +31,7 @@ async fn user_create(mut data: UserCreate) -> Result<impl Reply, Rejection> {
 	}
 
 	let client = get_client().await.unwrap().clone();
-	debug!(target: "api", "users:create - database client aquired");
+	debug!(target: "api", "users:create - database client acquired");
 	debug!(target: "api", "users:create - user data {:?}", &data);
 
 	let data_password = data.password.clone();

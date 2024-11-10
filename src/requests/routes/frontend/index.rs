@@ -5,10 +5,7 @@ use crate::client::index;
 #[allow(dead_code)]
 pub async fn get_template() -> Result<impl Reply, Rejection> {
     let template = index::Page {};
-    let result = match template.render() {
-        Ok(html) => html,
-        Err(_) => String::from("<h1>Internal Server Error</h1>")
-    };
+    let result = template.render().unwrap_or_else(|_| String::from("<h1>Internal Server Error</h1>"));
 
     Ok(warp::reply::html(result))
 }

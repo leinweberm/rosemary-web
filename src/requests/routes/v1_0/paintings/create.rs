@@ -15,21 +15,23 @@ async fn create_painting(data: PaintingCreate) -> Result<impl Reply, Rejection> 
 	debug!(target: "db", "paitings:create - Painting::create_query {}", &query);
 	let create_result = sqlx::query_as::<_, PaintingBase>(&query).fetch_one(&client).await;
 
-	match create_result {
+	let painting_base = match create_result {
 		Ok(painting) => {
 			debug!(target: "api", "paintings:create - result {:?}", &painting);
-			let response = GenericResponse::<PaintingBase> {
-				status: Status::Success,
-				message: "Painting created successfully",
-				data: Some(painting),
-			};
-			Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
+			painting
 		}
 		Err(error) => {
 			error!(target: "api", "paintings:create - error {:?}", error);
-			Ok(InternalServerError::new().response().await)
+			return Ok(InternalServerError::new().response().await)
 		}
-	}
+	};
+
+	let response = GenericResponse::<PaintingBase> {
+		status: Status::Success,
+		message: "Painting created successfully",
+		data: Some(painting_base),
+	};
+	Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
 }
 
 pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {

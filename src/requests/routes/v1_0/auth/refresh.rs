@@ -17,7 +17,7 @@ async fn refresh_token(claims: Claims) -> Result<impl Reply, Rejection> {
 		},
 		Err(error) => {
 			error!(target: "api", "users:refresh_token refreshing token failed {:?}", error);
-			return Err(error)
+			Err(error)
 		}
 	}
 }
