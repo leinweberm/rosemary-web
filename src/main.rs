@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 	assert_eq!(rows.0, 150_i64);
 	debug!(target: "app", "Database connection checked");
 
-	let routes = (requests::router::router()).recover(errors::api_error::handle_rejection);
+	let routes = requests::router::router().recover(errors::api_error::handle_rejection);
 	debug!(target: "app", "Router routes initialized");
 
 	debug!(target: "app", "App is listening on 127.0.0.1:3030");

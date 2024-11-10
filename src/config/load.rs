@@ -50,7 +50,7 @@ pub struct Config {
 }
 
 impl Config {
-	pub fn get_field<T: 'static>(&self, field: ConfigField) -> Result<T, std::io::Error> where T: Any + Clone {
+	pub fn get_field<T: 'static>(&self, field: ConfigField) -> Result<T, io::Error> where T: Any + Clone {
 		let value: Box<dyn Any + Send> = match field {
 			ConfigField::TestVariable => Box::new(self.test_variable.clone()),
 			ConfigField::DatabaseUrl => Box::new(self.database_url.clone()),
@@ -73,7 +73,7 @@ lazy_static! {
 	pub static ref CONFIG: OnceCell<Arc<Config>> = OnceCell::new();
 }
 
-pub async fn init () -> Result<(), std::io::Error> {
+pub async fn init () -> Result<(), io::Error> {
 	dotenv().ok();
 	debug!(target: "cfg", ".env file loaded");
 	let missing_required_error = "is required config property";

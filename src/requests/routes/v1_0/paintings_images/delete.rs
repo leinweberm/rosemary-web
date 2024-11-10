@@ -7,8 +7,8 @@ use crate::errors::api_error::InternalServerError;
 use crate::requests::dto::generic_response::{GenericResponse, Status};
 use crate::utils::auth::token::{jwt_auth, Claims};
 use crate::database::connection::get_client;
-use crate::config::load::{ConfigField, get};
 use crate::utils::file_system::fs_delete::remove_file;
+use crate::utils::file_system::fs_read::file_exists;
 
 async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 	let client = get_client().await.unwrap();
@@ -25,28 +25,38 @@ async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 		}
 	};
 
-	let file_path = match get::<String>(ConfigField::StaticFilesDir).await {
-		Ok(static_dir_path) => {
-			if let Some(pos) = image.url.rfind('/') {
-				let file_name = &image.url[pos + 1..];
-				Path::new(&static_dir_path).join(format!("images/{}", file_name))
-			} else {
-				error!(target: "api", "images:delete error filename not found");
-				return Ok(InternalServerError::new().response().await)
-			}
-		},
-		Err(error) => {
-			error!(target: "api", "images:delete error generate file path {:?}", error);
-			return Ok(InternalServerError::new().response().await)
-		}
-	};
-	debug!(target: "api", "images:delete path {:?}", &file_path);
+	if image.urls.is_empty() {
+		return Ok(GenericResponse::<PaintingImage>::send(
+			Status::Success,
+			"noFileFound",
+			None,
+			warp::http::StatusCode::OK
+		));
+	}
 
-	if let Some(path) = file_path.to_str() {
-		let removed = remove_file(path).await;
-		if !removed {
-			return Ok(InternalServerError::new().response().await)
-		};
+	for url in &image.urls {
+		let location = image.file_location.as_ref().unwrap();
+		let removal_path = Path::new(location).join(url);
+		let file_exists = file_exists(
+			removal_path.to_string_lossy()
+				.to_string()
+				.as_ref()
+		).await;
+
+		if !file_exists {
+			continue;
+		}
+
+		let removed_file = remove_file(
+			removal_path.to_string_lossy()
+				.to_string()
+				.as_ref()
+		).await;
+
+		if !removed_file {
+			debug!(target: "api", "images:delete - failed to remove image {}", removal_path.display());
+			return Ok(InternalServerError::new().response().await);
+		}
 	}
 
 	let delete_query = PaintingImage::delete_query(id);
@@ -63,12 +73,12 @@ async fn delete_painting_image(id: Uuid) -> Result<impl Reply, Rejection> {
 		}
 	}
 
-	let response = GenericResponse::<PaintingImage> {
-		status: Status::Success,
-		message: "Painting image deleted successfuly",
-		data: None
-	};
-	Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::OK))
+	Ok(GenericResponse::<PaintingImage>::send(
+		Status::Success,
+		"imageDeleted",
+		None,
+		warp::http::StatusCode::OK
+	))
 }
 
 pub fn delete() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {

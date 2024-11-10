@@ -1,10 +1,7 @@
 use std::path::Path;
 use std::io;
 use tokio::task;
-use image::{GenericImageView, ImageFormat, ImageError, ColorType, ExtendedColorType};
-use image::codecs::jpeg::JpegEncoder;
-use tokio::fs::File;
-use std::io::BufWriter;
+use image::{GenericImageView, ImageFormat, ImageError};
 
 use crate::config::load::{get, ConfigField};
 
@@ -56,8 +53,8 @@ async fn resize_to_max_image(
 	}
 	debug!(target: "app", "images:resize - max size {} x {}", &max_width, &max_height);
 
-	let mut new_height;
-	let mut new_width;
+	let new_height;
+	let new_width;
 	if max_width > max_height {
 		let ration = max_width as f32 / image_width as f32;
 		new_height = (image_height as f32 * ration) as u32;

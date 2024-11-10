@@ -37,22 +37,16 @@ async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection
 
 	let (count, rows) = tokio::join!(count_task, rows_task);
 
-	result.count = match count {
-		Ok(count) => count,
-		Err(error) => {
-			error!(target: "api", "paintings:get_all - failed to count {}", error);
-			0
-		},
-	};
+	result.count = count.unwrap_or_else(|error| {
+		error!(target: "api", "paintings:get_all - failed to count {}", error);
+		0
+	});
 	debug!(target: "api", "paintings:get_all - {}", &result.count);
 
-	result.rows = match rows {
-		Ok(rows) => rows,
-		Err(error) => {
-			error!(target: "api", "paintings:get_all - failed to get rows {}", error);
-			Vec::new()
-		},
-	};
+	result.rows = rows.unwrap_or_else(|error| {
+		error!(target: "api", "paintings:get_all - failed to get rows {}", error);
+		Vec::new()
+	});
 	debug!(target: "api", "paintings:get_all - {:?}", &result.rows);
 
 	Ok(warp::reply::json(&result))

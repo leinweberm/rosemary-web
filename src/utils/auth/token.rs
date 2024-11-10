@@ -82,7 +82,7 @@ pub async fn encode_token(user_id: &str, expiration_in_seconds: usize, secret: &
 		exp: expiration_copy,
 	};
 
-	let token = match encode(&Header::default(), &claims, &secret.encoding) {
+	let token = match encode(&Header::new(Algorithm::HS256), &claims, &secret.encoding) {
 		Ok(value) => value,
 		Err(error) => {
 			error!(target: "auth", "jwt:encode- failed to encode JWT token {}", error);
@@ -145,7 +145,7 @@ pub async fn verify(token: String) -> Result<Claims, Rejection> {
 	let secret = match get_keys().await {
 		Ok(value) => value,
 		Err(error) => {
-			error!(target: "auth", "jwt:decore - failed to get JWT secrets {}", error);
+			error!(target: "auth", "jwt:decode - failed to get JWT secrets {}", error);
 			return Err(warp::reject::custom(InternalServerError::new()))
 		}
 	};

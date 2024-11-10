@@ -24,21 +24,15 @@ pub async fn get_file_size(file_path: &str) -> u64 {
 }
 
 pub async fn read_file(file_path: &str) -> Vec<u8> {
-	match fs::read(file_path).await {
-		Ok(value) => value,
-		Err(error) => {
-			error!(target: "fs", "Failed to read file {}", error);
-			Vec::new()
-		},
-	}
+	fs::read(file_path).await.unwrap_or_else(|error| {
+		error!(target: "fs", "Failed to read file {}", error);
+		Vec::new()
+	})
 }
 
 pub async fn read_file_to_string(file_path: &str) -> String {
-	match fs::read_to_string(file_path).await {
-		Ok(value) => value,
-		Err(error) => {
-			error!(target: "fs", "Failed to read file into string {}", error);
-			String::from("")
-		}
-	}
+	fs::read_to_string(file_path).await.unwrap_or_else(|error| {
+		error!(target: "fs", "Failed to read file into string {}", error);
+		String::from("")
+	})
 }

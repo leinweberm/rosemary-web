@@ -58,7 +58,7 @@ mod tests {
 		assert_eq!(exists, true);
 
 		let size = fs_read::get_file_size(&file_path).await;
-		let has_valid_size = size as u64 > 0u64;
+		let has_valid_size = size > 0u64;
 		assert_eq!(has_valid_size, true);
 
 		let read_file_string = fs_read::read_file_to_string(&file_path).await;

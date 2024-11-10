@@ -20,7 +20,7 @@ const prepareNavbarPosition = () => {
 			nav.style.top = '-60px';
 			navHidden = true;
 		} else if (scrollY < lastScroll && navHidden) {
-			nav.style.top = 0;
+			nav.style.top = '0';
 			navHidden = false;
 		}
 		lastScroll = scroll;

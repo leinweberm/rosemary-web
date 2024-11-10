@@ -162,7 +162,6 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 
 	let data = PaintingImageCreate {
 		preview: image_data.preview,
-		url: image_data.file_path.clone(),
 		alt_cs: image_data.alt_cs.clone(),
 		alt_en: image_data.alt_en.clone(),
 		title_cs: image_data.title_cs.clone(),
@@ -175,7 +174,7 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 	let create_result = sqlx::query_as::<_, PaintingImage>(&query)
 		.fetch_one(&*client).await;
 
-	let painting = match create_result {
+	let mut painting = match create_result {
 		Ok(painting_image) => {
 			debug!(target: "api", "images:create - result {:?}", &painting_image);
 						painting_image
@@ -199,16 +198,39 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 	let resize_result = resize_to_max(image_job).await;
 	let mut index = 0;
 	let mut failed_resize = false;
+	let mut resized_paths: Vec<String> = Vec::new();
+
 	for result in resize_result.into_iter() {
 		if !result {
 			error!(target: "api", "images:create - resize failed {:?}", sizes[index]);
 			failed_resize = true;
+		} else {
+			resized_paths.push(String::from(format!("images/{}_{}.jpeg", &painting.id, sizes[index])));
 		}
 		index += 1;
 	}
 
 	if failed_resize {
 		return Ok(ImageResizeError::new().response().await)
+	}
+
+	if resized_paths.len() == 4 {
+		let update_query = PaintingImage::update_resized_query(
+			painting.id, static_file_dir.clone(), resized_paths);
+		debug!(target: "api", "images:create - update resized query {}", &update_query);
+		let update_result = sqlx::query_as::<_, PaintingImage>(&update_query)
+			.fetch_one(&*client)
+			.await;
+		match update_result {
+			Ok(value) => {
+				debug!(target: "api", "images:create - updated resized image painting record");
+				painting = value;
+			},
+			Err(error) => {
+				error!(target: "api", "images:create - updating resized image record failed {}", error);
+				return Ok(InternalServerError::new().response().await);
+			}
+		}
 	}
 
 	let response = GenericResponse::<PaintingImage> {
