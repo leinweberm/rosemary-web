@@ -1,30 +1,45 @@
 use sqlx::{Pool, Postgres};
+use warp::Filter;
 
 mod requests;
 mod utils;
 mod database;
+mod client;
+mod config;
+mod errors;
 
+extern crate pretty_env_logger;
+#[macro_use] extern crate log;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Database connecting...");
-    let client: Pool<Postgres> = database::connection::init_connection().await?;
-    println!("Database connected");
+	pretty_env_logger::init();
 
-    let rows: (i64,) = sqlx::query_as("SELECT $1")
-        .bind(150_i64)
-        .fetch_one(&client)
-        .await?;
+	let _init_config = config::load::init().await?;
+	let _test_config = config::load::test().await?;
+	debug!("app config loaded and tested");
 
-    assert_eq!(rows.0, 150_i64);
-    println!("Database connection checked");
+	debug!(target: "app", "Database connecting");
+	let client: Pool<Postgres> = database::connection::init_connection().await?;
+	debug!(target: "app", "Database connected");
 
-    let routes = requests::router::router();
-    println!("Router routes initialized");
+	utils::auth::token::set_keys().await?;
+	debug!(target: "app", "JWT secrets initialized");
 
-    println!("App is listening on 127.0.0.1:3030");
-    warp::serve(routes)
-        .run(([127, 0, 0, 1], 3030))
-        .await;
+	let rows: (i64,) = sqlx::query_as("SELECT $1")
+		.bind(150_i64)
+		.fetch_one(&client)
+		.await?;
 
-    Ok(())
+	assert_eq!(rows.0, 150_i64);
+	debug!(target: "app", "Database connection checked");
+
+	let routes = requests::router::router().recover(errors::api_error::handle_rejection);
+	debug!(target: "app", "Router routes initialized");
+
+	debug!(target: "app", "App is listening on 127.0.0.1:3030");
+	warp::serve(routes)
+		.run(([127, 0, 0, 1], 3030))
+		.await;
+
+	Ok(())
 }

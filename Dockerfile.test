@@ -1,0 +1,16 @@
+FROM rust:latest as builder
+WORKDIR /usr/src/myapp
+COPY Cargo.toml Cargo.lock ./
+COPY ./templates ./
+RUN mkdir src
+COPY src ./src
+RUN cargo build --release
+
+FROM alpine:latest
+RUN apk add --no-cache libstdc++
+WORKDIR /usr/src/myapp
+COPY --from=builder /usr/src/myapp/target/release/rosemary .
+COPY .env.test .env
+EXPOSE 3030
+ENV RUST_LOG=app=debug,db=debug,cfg=debug,api=debug,fs=debug
+CMD ["./rosemary"]
