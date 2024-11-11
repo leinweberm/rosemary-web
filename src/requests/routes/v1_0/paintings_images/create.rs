@@ -15,6 +15,7 @@ use crate::requests::dto::generic_response::{GenericResponse, Status};
 use crate::utils::auth::token::{jwt_auth, Claims};
 use crate::config::load::{ConfigField, get};
 use crate::utils::file_system::fs_write::append_bytes;
+use crate::utils::file_system::fs_delete::remove_file;
 use crate::utils::images::resize_to_max::{ResizeImageJob, resize_to_max};
 
 #[derive(Serialize)]
@@ -233,12 +234,12 @@ async fn create_painting_image(data: FormData, params: ImageMetaQuery) -> Result
 		}
 	}
 
-	let response = GenericResponse::<PaintingImage> {
-		status: Status::Success,
-		message: "Painting image created successfully",
-		data: Some(painting),
-	};
-	Ok(warp::reply::with_status(warp::reply::json(&response), warp::http::StatusCode::CREATED))
+	let removed_original = remove_file(&file_system_path.to_string_lossy().to_string().as_ref()).await;
+	if !removed_original {
+		error!(target: "api", "images:create - failed to remove original uploaded file");
+	}
+
+	Ok(GenericResponse::send(Status::Success, "paintingImageCreated", Some(painting), warp::http::StatusCode::CREATED))
 }
 
 pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -248,7 +249,7 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and(path("images"))
 		.and(path::end())
 		.and(query::<ImageMetaQuery>())
-		.and(warp::multipart::form())
+		.and(warp::multipart::form().max_length(52_428_800))
 		.and(jwt_auth())
 		.and_then(|params: ImageMetaQuery, data: FormData, _claims: Claims| async move {
 			create_painting_image(data, params).await
