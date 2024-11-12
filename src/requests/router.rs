@@ -1,6 +1,7 @@
 use warp::Filter;
 use crate::requests;
 use crate::errors::api_error::handle_rejection;
+use crate::utils::cors::cors_setting::settings;
 
 pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
 	// GET /
@@ -31,4 +32,6 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
 	.or(requests::routes::v1_0::auth::refresh::refresh())
 	// Error handling
 	.recover(handle_rejection)
+	// Allow CORS
+	.with(settings())
 }

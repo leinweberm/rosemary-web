@@ -1,26 +1,41 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useUserStore } from '../stores/userStore';
+import { useRouter } from 'vue-router';
 
 const username = ref<string>("");
 const password = ref<string>("");
 const loginForm = ref();
+const userStore = useUserStore();
+const router = useRouter();
 
 const nameRules = [
-	value => !!value || 'Email je povinné pole',
-	value => /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value) || 'Email musí mít platný formát'
+	(value: string) => !!value.length || 'Chybí uživatelské jméno',
 ];
 
 const passwordRules = [
-	value => !!value || 'Heslo je povinne',
-	value => (value.length > 8) || 'Heslo musí mít aspoň 8 znaků',
-	value => (value.length < 33) || 'Heslo musí mít maximálně 32 znaků',
-	value => /\d/.test(value) || 'Heslo musí obsahovat číslici',
-	value => /[a-zA-Z]/.test(value) || 'Heslo musí obsahovat písmeno'
+	(value: string) => !!value || 'Chybí heslo',
+	// (value: string) => (value.length >= 8) || 'Heslo musí mít aspoň 8 znaků',
+	// (value: string) => (value.length <= 32) || 'Heslo musí mít maximálně 32 znaků',
+	// (value: string) => /\d/.test(value) || 'Heslo musí obsahovat číslici',
+	// (value: string) => /[a-zA-Z]/.test(value) || 'Heslo musí obsahovat písmeno'
 ];
 
 const login = async () => {
 	const valid = await loginForm.value.validate();
-	loginForm.value.reset();
+
+	if (!valid) {
+		window.alert('Formulář není správně vyplněn!');
+		return;
+	}
+
+	const loggedIn = await userStore.login(username.value, password.value);
+	console.log('loggedIn', loggedIn);
+
+	if (loggedIn) {
+		loginForm.value.reset();
+		await router.push({name: 'Home'});
+	}
 };
 </script>
 
@@ -29,9 +44,8 @@ const login = async () => {
 		<v-form ref="loginForm">
 			<v-text-field
 				v-model="username"
-				label="Email"
+				label="Uživatelské jméno"
 				:rules="nameRules"
-				type="email"
 				required
 			></v-text-field>
 			<v-text-field
