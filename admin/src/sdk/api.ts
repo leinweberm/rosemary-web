@@ -1,6 +1,5 @@
 import axios from "axios";
 import { TUser } from "../stores/userStore";
-// import { TUser } from "../stores/userStore";
 
 export class ApiSDK {
 	private url:string = 'http://127.0.0.1:3030';
@@ -26,6 +25,19 @@ export class ApiSDK {
 		} else {
 			window.alert('Jejda, něco se pokazilo!');
 			return null;
+		}
+	}
+
+	async refreshToken(token: string): Promise<any> {
+		const response = await axios.get(`${this.url}/api/v1.0/users/refresh/token`, {
+			headers: {
+				'Authorization': `Bearer ${token}`
+			}
+		});
+		if (response.status == 'Success' && response.token) {
+			return response.token;
+		} else {
+			return;
 		}
 	}
 }

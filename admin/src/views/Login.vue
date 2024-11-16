@@ -10,7 +10,7 @@ const userStore = useUserStore();
 const router = useRouter();
 
 const nameRules = [
-	(value: string) => !!value.length || 'Chybí uživatelské jméno',
+	(value: string) => (!!value && !!value.length) || 'Chybí uživatelské jméno',
 ];
 
 const passwordRules = [
