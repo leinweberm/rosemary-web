@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {useRoute} from "vue-router";
 import {onMounted, ref} from "vue";
+import {TUploadImagePaintingQuery} from "../../sdk/api.ts";
 
 type TPreviewData = {
 	url: string;
@@ -22,7 +23,8 @@ const width = ref<number>(1);
 const height = ref<number>(1);
 const previewImage = ref<TPreviewData | null>(null);
 const paintingImages = ref<File[]>([]);
-const uploadPreviews = ref<TPreviewData[]>([]);
+const paintingImagesData = ref<TUploadImagePaintingQuery[]>([]);
+const paintingImagesPreviews = ref<TPreviewData[]>([]);
 
 const resizeImage = (width: number, height: number, maxSize: number): [width: number, height: number] => {
 	const ratio = width > height ? maxSize / width : maxSize / height;
@@ -38,7 +40,7 @@ const handleFileInput = () => {
 		if (paintingImages.value[i].type !== 'image/jpeg') {
 			window.alert('Nahrávejte pouze JPEG obrázky!');
 			paintingImages.value = [];
-			uploadPreviews.value = [];
+			paintingImagesPreviews.value = [];
 			break;
 		}
 
@@ -52,10 +54,18 @@ const handleFileInput = () => {
 				image.naturalHeight,
 				240
 			);
-			uploadPreviews.value.push({
+			paintingImagesPreviews.value.push({
 				url: previewUrl,
 				width: `${newWidth}px`,
 				height: `${newHeight}px`
+			});
+			paintingImagesData.value.push({
+				preview: 'false',
+				title_cs: '',
+				title_en: '',
+				alt_cs: '',
+				alt_en: '',
+				painting_id: ''
 			});
 		};
 	}
@@ -79,8 +89,15 @@ const handleHeightChange = (event: any) => {
 	resizeImagePreviewSkeleton()
 };
 
-const setPreviewImage = (preview: TPreviewData): void => {
-	previewImage.value = preview;
+const setPreviewImage = (index: number): void => {
+	if (previewImage.value) {
+		const findPreviewSource = paintingImagesPreviews.value.findIndex((el) => el.url === previewImage.value?.url);
+		if (findPreviewSource) {
+			paintingImagesData.value[findPreviewSource].preview = 'false';
+		}
+	}
+	previewImage.value = paintingImagesPreviews.value[index];
+	paintingImagesData.value[index].preview = 'true';
 };
 
 onMounted(() => {
@@ -241,6 +258,7 @@ onMounted(() => {
 							multiple
 							counter
 							chips
+							:disabled="!!paintingImages.length"
 							@update:modelValue="handleFileInput"
 						></v-file-input>
 					</v-col>
@@ -250,28 +268,89 @@ onMounted(() => {
 					<v-row>
 						<v-col>
 							<div class="imagePreviewWrapper">
-								<div
-									v-for="(preview, index) in uploadPreviews"
+								<template
+									v-for="(_, index) in paintingImages"
 									:key="index"
-									:class="{
-										imagePreviewWrapperSelected: (previewImage && previewImage.url === preview.url),
-										imagePreviewItem: (!previewImage || previewImage.url !== preview.url),
-									}"
-									:style="{
-										height: preview.height,
-										width: preview.width,
-										margin: '10px',
-										cursor: 'pointer'
-									}"
-									@click.stop="setPreviewImage(preview)"
 								>
-									<img
-										:src="preview.url"
-										:width="preview.width"
-										:height="preview.height"
-										alt="upload image"
-									/>
-								</div>
+									<div class="previewImageRow">
+										<div style="height: 240px; width: 240px; align-items: center; justify-content: center; display: flex">
+											<div
+												:class="{
+													imagePreviewWrapperSelected: (previewImage && previewImage.url === paintingImagesPreviews[index].url),
+													imagePreviewItem: (!previewImage || previewImage.url !== paintingImagesPreviews[index].url),
+												}"
+												:style="{
+													cursor: 'pointer',
+													height: paintingImagesPreviews[index].height,
+													width: paintingImagesPreviews[index].width,
+												}"
+												@click.stop="setPreviewImage(index)"
+											>
+												<img
+													:src="paintingImagesPreviews[index].url"
+													alt="upload image preview"
+													:height="paintingImagesPreviews[index].height"
+													:width="paintingImagesPreviews[index].width"
+												>
+											</div>
+										</div>
+										<div class="imageMetaData">
+											<v-row>
+												<v-col>
+													<v-text-field
+														v-model="paintingImagesData[index].title_cs"
+														type="text"
+														label="Název CZ"
+													></v-text-field>
+												</v-col>
+											</v-row>
+											<v-row>
+												<v-col>
+													<v-text-field
+														v-model="paintingImagesData[index].alt_cs"
+														type="text"
+														label="Alt CZ"
+													></v-text-field>
+												</v-col>
+											</v-row>
+										</div>
+										<div class="imageMetaData">
+											<v-row>
+												<v-col>
+													<v-text-field
+														v-model="paintingImagesData[index].title_cs"
+														type="text"
+														label="Název EN"
+													></v-text-field>
+												</v-col>
+											</v-row>
+											<v-row>
+												<v-col>
+													<v-text-field
+														v-model="paintingImagesData[index].alt_cs"
+														type="text"
+														label="Alt EN"
+													></v-text-field>
+												</v-col>
+											</v-row>
+											<v-row
+												style="position: absolute; bottom: 0; right: 20px"
+											>
+												<v-col>
+													<v-btn
+														variant="tonal"
+														color="error"
+														size="small"
+													>Odstranit</v-btn>
+												</v-col>
+											</v-row>
+										</div>
+									</div>
+									<v-divider
+										v-if="index !== (paintingImages.length - 1)"
+										style="margin: 10px 0"
+									></v-divider>
+								</template>
 							</div>
 						</v-col>
 					</v-row>
@@ -316,7 +395,6 @@ onMounted(() => {
 .imagePreviewWrapper {
 	display: flex;
 	width: 100%;
-	min-height: 240px;
 	flex-wrap: wrap;
 	align-items: center;
 	justify-content: flex-start;
@@ -337,5 +415,18 @@ onMounted(() => {
 		0px 4px 5px -2px rgba(0, 0, 0, 0.5),
 		0px 7px 10px 1px rgba(0, 0, 0, 0.5),
 		0px 2px 16px 1px rgba(0, 0, 0, 0.5);
+}
+.previewImageRow {
+	display: flex;
+	width: 100%;
+	height: 240px;
+}
+.imageMetaData {
+	display: flex;
+	flex-direction: column;
+	width: calc((100% - 250px) / 2);
+	height: 240px;
+	padding: 10px 20px;
+	position: relative;
 }
 </style>
