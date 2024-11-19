@@ -41,7 +41,7 @@ export class ApiSDK {
 		}
 	}
 
-	async createPainting(data: TCreatePainting, token: string): Promise<boolean> {
+	async createPainting(data: TCreatePainting, token: string): Promise<any> {
 		try {
 			const response = await axios.post(
 				`${this.url}/api/v1.0/paintings`,
@@ -53,14 +53,15 @@ export class ApiSDK {
 			});
 			if (response.status !== 201 || response.data.status !== 'Success') {
 				window.alert('Nepodařilo se nahrát obraz');
-				return false;
+				return;
+			} else {
+				return response.data;
 			}
 		} catch (error) {
 			console.error(error);
 			window.alert('Nepodařilo se nahrát obraz');
-			return false;
+			return;
 		}
-		return true;
 	}
 
 	async uploadPaintingImage(file: File, query: TUploadImagePaintingQuery, token: string): Promise<boolean> {

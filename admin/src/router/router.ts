@@ -5,6 +5,7 @@ export enum routesOpts {
 	Home = 'Home',
 	Login = 'Login',
 	P_CREATE = 'PaintingCreate',
+	P_DETAIL = 'PaintingDetail',
 }
 
 const routes = [
@@ -22,6 +23,11 @@ const routes = [
 		name: routesOpts.P_CREATE,
 		path: '/paintings/+',
 		component: () => import('../views/Paintings/Entry.vue')
+	},
+	{
+		name: routesOpts.P_DETAIL,
+		path: '/paintings/:id',
+		component: () => import('../views/Paintings/EntryDeatil.vue')
 	}
 ];
 

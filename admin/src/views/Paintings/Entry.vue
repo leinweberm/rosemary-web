@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import {useRoute} from "vue-router";
-import {onMounted, ref} from "vue";
-import {TUploadImagePaintingQuery} from "../../sdk/api.ts";
+import {useRoute, useRouter} from "vue-router";
+import {inject, onMounted, ref} from "vue";
+import {type ApiSDK as SDK, TUploadImagePaintingQuery} from "../../sdk/api.ts";
+import {routesOpts} from "../../router/router.ts";
+import {useUserStore} from "../../stores/userStore.ts";
 
 type TPreviewData = {
 	url: string;
@@ -9,11 +11,12 @@ type TPreviewData = {
 	height: string;
 };
 
+const router = useRouter();
+const userStore = useUserStore();
 const isNew = ref<boolean>(false);
 const route = useRoute();
 const paintingForm = ref(null);
 const tab = ref<number>(0);
-
 const title_cs = ref<string>("");
 const title_en = ref<string>("");
 const description_cs = ref<string>("");
@@ -24,7 +27,12 @@ const height = ref<number>(1);
 const previewImage = ref<TPreviewData | null>(null);
 const paintingImages = ref<File[]>([]);
 const paintingImagesData = ref<TUploadImagePaintingQuery[]>([]);
-const paintingImagesPreviews = ref<TPreviewData[]>([]);
+const paintingImagesPreviews = ref<TPreviewData[]>([])
+const isSaving = ref<number>(0);
+const savingProgress = ref<number>(0);
+const savingDialogText = ref<string>('PROBÍHÁ UKLÁDÁNÍ');
+const paintingId = ref<string>('');
+const ApiSDK: SDK | undefined = inject<SDK>('ApiSDK');
 
 const resizeImage = (width: number, height: number, maxSize: number): [width: number, height: number] => {
 	const ratio = width > height ? maxSize / width : maxSize / height;
@@ -69,6 +77,97 @@ const handleFileInput = () => {
 			});
 		};
 	}
+};
+
+const validateForm = async () => {
+	// @ts-expect-error
+	const valid = await paintingForm.value.validate();
+	if (!valid) {
+		window.alert('Nevalidní formulář');
+		return false;
+	}
+	if (!paintingImages.value.length) {
+		window.alert('Obraz musí mít alespoň jednu fotku');
+		return false;
+	}
+	if (!previewImage) {
+		window.alert('Obraz musí mít náhledovou fotku');
+		return false;
+	}
+	if (!ApiSDK) {
+		window.alert('Něco se pokazilo');
+		return false;
+	}
+	return true;
+}
+
+const setProgress = (value: number): void => {
+	savingProgress.value = ((savingProgress.value + value) > 100)
+		? 100
+		: (savingProgress.value + value);
+}
+
+const save = async () => {
+	const validForm = await validateForm();
+	if (!validForm) return;
+	isSaving.value = 1;
+
+	const step = Math.ceil(100 / (1 + paintingImages.value.length));
+	try {
+		await userStore.authRouteAccess();
+		let token = userStore.getUser?.token;
+		if (!token) throw new Error('Nepřihlášený užvatel');
+		const { data } = await ApiSDK?.createPainting({
+			// @ts-ignore
+			price: parseInt(price.value),
+			width: width.value,
+			height: height.value,
+			title_cs: title_cs.value,
+			title_en: title_en.value,
+			description_cs: description_cs.value,
+			description_en: description_en.value,
+		}, token);
+		paintingId.value = data.id;
+	} catch (error) {
+		console.error(error);
+		window.alert('Nepovedlo se vytvořit obraz');
+		return;
+	}
+	setProgress(step);
+
+	for (let i = 0, len = paintingImages.value.length; i < len; i++) {
+		try {
+			await userStore.authRouteAccess();
+			let token = userStore.getUser?.token;
+			if (!token) throw new Error('Nepřihlášený užvatel');
+			await ApiSDK?.uploadPaintingImage(
+				paintingImages.value[i],
+				{
+					preview: paintingImagesData.value[i].preview,
+					title_cs: paintingImagesData.value[i].title_cs,
+					title_en: paintingImagesData.value[i].title_en,
+					alt_cs: paintingImagesData.value[i].alt_cs,
+					alt_en: paintingImagesData.value[i].alt_en,
+					painting_id: paintingId.value,
+				},
+				token
+			);
+		} catch (error) {
+			console.error(error);
+			window.alert('Nepovedlo se nahrát fotku obrazu');
+		}
+		setProgress(step);
+	}
+
+	savingDialogText.value = 'Uloženo';
+	isSaving.value = 2;
+}
+
+const openDetail = () => {
+	router.push({
+		name: routesOpts.P_DETAIL,
+		params: {id: paintingId.value},
+	});
 };
 
 const resizeImagePreviewSkeleton = () => {
@@ -130,6 +229,7 @@ onMounted(() => {
 			variant="elevated"
 			color="primary"
 			style="margin-left: 8px"
+			@click.stop="save"
 		>Uložit</v-btn>
 	</div>
 <!-- TRANSLATIONS -->
@@ -263,7 +363,6 @@ onMounted(() => {
 						></v-file-input>
 					</v-col>
 				</v-row>
-<!--				<template v-if="uploadPreviews.length">-->
 					<v-divider></v-divider>
 					<v-row>
 						<v-col>
@@ -318,7 +417,7 @@ onMounted(() => {
 											<v-row>
 												<v-col>
 													<v-text-field
-														v-model="paintingImagesData[index].title_cs"
+														v-model="paintingImagesData[index].title_en"
 														type="text"
 														label="Název EN"
 													></v-text-field>
@@ -327,7 +426,7 @@ onMounted(() => {
 											<v-row>
 												<v-col>
 													<v-text-field
-														v-model="paintingImagesData[index].alt_cs"
+														v-model="paintingImagesData[index].alt_en"
 														type="text"
 														label="Alt EN"
 													></v-text-field>
@@ -354,10 +453,33 @@ onMounted(() => {
 							</div>
 						</v-col>
 					</v-row>
-<!--				</template>-->
 			</v-container>
 		</v-card>
 	</v-form>
+	<dialog v-if="isSaving" id="savingDialog" class="elevation-7">
+		<div style="width: 100%">
+			<h2 style="text-align: center">{{ savingDialogText }}</h2>
+		</div>
+		<div style="width: 100%; display: flex; align-items: center; margin-top: 20px">
+			<v-progress-linear
+				color="amber"
+				height="50"
+				v-model="savingProgress"
+			>
+				<strong>{{ Math.ceil(savingProgress) }}%</strong>
+			</v-progress-linear>
+		</div>
+		<v-btn
+			v-if="isSaving === 2"
+			variant="elevated"
+			size="large"
+			color="success"
+			style="margin-top: 20px"
+			@click.stop="openDetail"
+		>
+			OK
+		</v-btn>
+	</dialog>
 </template>
 
 <style scoped>
@@ -428,5 +550,21 @@ onMounted(() => {
 	height: 240px;
 	padding: 10px 20px;
 	position: relative;
+}
+
+dialog {
+	position: absolute;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	display: flex;
+	z-index: 10;
+	top: 50dvh;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 500px;
+	height: 250px;
+	border: none;
+	padding: 20px;
 }
 </style>
