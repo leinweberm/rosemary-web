@@ -1,0 +1,8 @@
+/home/leinweberm/Documents/personal/Rust-rest-API/static
+/usr/share/nginx/html/static:ro
+
+/home/leinweberm/Documents/personal/Rust-rest-API/development/nginx
+/var/log/nginx
+
+/home/leinweberm/Documents/personal/Rust-rest-API/development/nginx
+/etc/nginx/nginx.conf:ro

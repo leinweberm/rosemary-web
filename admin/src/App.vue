@@ -50,6 +50,7 @@ const mainBackground = computed(() => {
 						title="Zobrazit vše"
 						style="color: gray;"
 						link
+						@click.stop="router.push({name: routesOpts.P_LIST})"
 					></v-list-item>
 					<v-list-item
 						title="Vytvořit"

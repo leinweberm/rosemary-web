@@ -4,6 +4,7 @@ import { useUserStore } from "../stores/userStore";
 export enum routesOpts {
 	Home = 'Home',
 	Login = 'Login',
+	P_LIST = 'PaintingList',
 	P_CREATE = 'PaintingCreate',
 	P_DETAIL = 'PaintingDetail',
 }
@@ -18,6 +19,11 @@ const routes = [
 		name: routesOpts.Login,
 		path: '/login',
 		component: () => import('../views/Login.vue')
+	},
+	{
+		name: routesOpts.P_LIST,
+		path: '/paintings',
+		component: () => import('../views/Paintings/List.vue')
 	},
 	{
 		name: routesOpts.P_CREATE,

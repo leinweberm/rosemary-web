@@ -109,13 +109,13 @@ impl Painting {
 				(JSON_BUILD_OBJECT(
 					'id', pi.id,
 					'preview', pi.preview,
-					'url', pi.url,
+					'urls', pi.urls,
 					'alt', pi.alt,
 					'title', pi.title,
 					'painting_id', pi.painting_id
 				)) AS preview
 				FROM rosemary.paintings p
-				LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE AND pi.status = 'PROCESSED'
+				LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
 				WHERE p.id = '{}'
 					AND p.deleted IS NULL
 				LIMIT 1
@@ -137,10 +137,11 @@ impl Painting {
 				(JSON_BUILD_OBJECT(
 					'id', pi.id,
 					'preview', pi.preview,
-					'url', pi.url,
+					'urls', pi.urls,
 					'alt', pi.alt,
 					'title', pi.title,
-					'painting_id', pi.painting_id
+					'painting_id', pi.painting_id,
+					'status', status
 				)) AS preview
 			FROM rosemary.paintings p
 			LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE

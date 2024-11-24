@@ -33,7 +33,7 @@ pub struct PaintingImage {
 	pub alt: Option<Translation>,
 	pub title: Option<Translation>,
 	pub painting_id: Uuid,
-	pub status: String,
+	pub status: Option<String>,
 	pub file_location: Option<String>,
 	pub urls: Vec<String>
 }

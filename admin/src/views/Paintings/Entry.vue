@@ -347,23 +347,23 @@ onMounted(() => {
 <!--	FILES	-->
 		<v-card>
 			<v-card-title>Soubory</v-card-title>
-			<v-container>
-				<v-row>
-					<v-col>
-						<v-file-input
-							v-model="paintingImages"
-							label="soubory"
-							variant="filled"
-							show-size
-							multiple
-							counter
-							chips
-							:disabled="!!paintingImages.length"
-							@update:modelValue="handleFileInput"
-						></v-file-input>
-					</v-col>
-				</v-row>
-					<v-divider></v-divider>
+				<v-container>
+					<v-row>
+						<v-col>
+							<v-file-input
+								v-model="paintingImages"
+								label="soubory"
+								variant="filled"
+								show-size
+								multiple
+								counter
+								chips
+								:disabled="!!paintingImages.length"
+								@update:modelValue="handleFileInput"
+							></v-file-input>
+						</v-col>
+					</v-row>
+					<v-divider/>
 					<v-row>
 						<v-col>
 							<div class="imagePreviewWrapper">
@@ -372,7 +372,7 @@ onMounted(() => {
 									:key="index"
 								>
 									<div class="previewImageRow">
-										<div style="height: 240px; width: 240px; align-items: center; justify-content: center; display: flex">
+										<div class="previewImageRowInner">
 											<div
 												:class="{
 													imagePreviewWrapperSelected: (previewImage && previewImage.url === paintingImagesPreviews[index].url),
@@ -417,7 +417,7 @@ onMounted(() => {
 											<v-row>
 												<v-col>
 													<v-text-field
-														v-model="paintingImagesData[index].title_en"
+														v-model="paintingImagesData[index].title_en	"
 														type="text"
 														label="Název EN"
 													></v-text-field>
@@ -483,88 +483,4 @@ onMounted(() => {
 </template>
 
 <style scoped>
-* {
-	box-sizing: border-box;
-}
-.actionButtons {
-	display: flex;
-	width: 100%;
-	justify-content: flex-end;
-	align-items: flex-end;
-	margin-bottom: 20px;
-}
-.entryGrid {
-	display: grid;
-	box-sizing: border-box;
-	margin-bottom: 20px;
-	padding: 0;
-	grid-template-columns: calc(100% - 300px) 300px;
-	gap: 20px;
-	width: calc(100% - 25px);
-}
-.imageWrapper {
-	display: flex;
-	height: 250px;
-	width: 250px;
-	justify-content: center;
-	align-items: center;
-	margin: auto;
-	position: relative;
-}
-.imageSkeleton {
-	display: flex;
-}
-.imagePreviewWrapper {
-	display: flex;
-	width: 100%;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: flex-start;
-	margin-top: 20px;
-}
-.imagePreviewItem, .imagePreviewWrapperSelected {
-	transition-property: box-shadow;
-	transition-duration: 0.28s;
-}
-.imagePreviewItem:hover {
-	box-shadow:
-		0px 3px 2px -2px rgba(0, 0, 0, 0.2),
-		0px 2px 4px 0px rgba(0, 0, 0, 0.14),
-		0px 1px 10px 0px rgba(0, 0, 0, 0.12);
-}
-.imagePreviewWrapperSelected {
-	box-shadow:
-		0px 4px 5px -2px rgba(0, 0, 0, 0.5),
-		0px 7px 10px 1px rgba(0, 0, 0, 0.5),
-		0px 2px 16px 1px rgba(0, 0, 0, 0.5);
-}
-.previewImageRow {
-	display: flex;
-	width: 100%;
-	height: 240px;
-}
-.imageMetaData {
-	display: flex;
-	flex-direction: column;
-	width: calc((100% - 250px) / 2);
-	height: 240px;
-	padding: 10px 20px;
-	position: relative;
-}
-
-dialog {
-	position: absolute;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	display: flex;
-	z-index: 10;
-	top: 50dvh;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	width: 500px;
-	height: 250px;
-	border: none;
-	padding: 20px;
-}
 </style>

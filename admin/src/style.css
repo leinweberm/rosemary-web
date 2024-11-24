@@ -1,79 +1,95 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+* {
+	box-sizing: border-box;
 }
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+.actionButtons {
+	display: flex;
+	width: 100%;
+	justify-content: flex-end;
+	align-items: flex-end;
+	margin-bottom: 20px;
 }
-a:hover {
-  color: #535bf2;
+.entryGrid {
+	display: grid;
+	box-sizing: border-box;
+	margin-bottom: 20px;
+	padding: 0;
+	grid-template-columns: calc(100% - 300px) 300px;
+	gap: 20px;
+	width: calc(100% - 25px);
 }
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+.imageWrapper {
+	display: flex;
+	height: 250px;
+	width: 250px;
+	justify-content: center;
+	align-items: center;
+	margin: auto;
+	position: relative;
 }
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.imageSkeleton {
+	display: flex;
 }
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+.imagePreviewWrapper {
+	display: flex;
+	width: 100%;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-start;
+	margin-top: 20px;
 }
-button:hover {
-  border-color: #646cff;
+.imagePreviewItem, .imagePreviewWrapperSelected {
+	transition-property: box-shadow;
+	transition-duration: 0.28s;
 }
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.imagePreviewItem:hover {
+	box-shadow:
+		0px 3px 2px -2px rgba(0, 0, 0, 0.2),
+		0px 2px 4px 0px rgba(0, 0, 0, 0.14),
+		0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 }
-
-.card {
-  padding: 2em;
+.imagePreviewWrapperSelected {
+	box-shadow:
+		0px 4px 5px -2px rgba(0, 0, 0, 0.5),
+		0px 7px 10px 1px rgba(0, 0, 0, 0.5),
+		0px 2px 16px 1px rgba(0, 0, 0, 0.5);
 }
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.previewImageRow {
+	display: flex;
+	width: 100%;
+	height: 240px;
 }
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.previewImageRowInner {
+	height: 240px;
+	width: 240px;
+	align-items: center;
+	justify-content: center;
+	display: flex;
+}
+.imageMetaData {
+	display: flex;
+	flex-direction: column;
+	width: calc((100% - 250px) / 2);
+	height: 240px;
+	padding: 10px 20px;
+	position: relative;
+}
+dialog {
+	position: absolute;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	display: flex;
+	z-index: 10;
+	top: 50dvh;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 500px;
+	height: 250px;
+	border: none;
+	padding: 20px;
+}
+.paintingPaintingImage {
+	max-height: 240px;
+	max-width: 240px;
+	object-fit: contain;
 }
