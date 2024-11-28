@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core';
 import {type Ref} from 'vue';
-import type {TUploadImagePaintingQuery} from "../sdk/api.ts";
-
-type TEventKey = keyof TUploadImagePaintingQuery;
-export type TEventPaintingImageRow = {
-	key: TEventKey;
-	value: string;
-}
+import type {TEventPaintingImageRow, TEventPaintingImageRowKey} from "../composable/image/imageChangeEvent.ts";
 
 // const emits = defineEmits(['modelUpdate']);
 const emits = defineEmits<{
@@ -26,7 +20,7 @@ const props = defineProps<{
 	edit: Ref<boolean> | boolean,
 }>();
 
-const debouncedModelUpdate = useDebounceFn((key: TEventKey, value: string) => {
+const debouncedModelUpdate = useDebounceFn((key: TEventPaintingImageRowKey, value: string) => {
 	emits('modelUpdate', {key, value});
 }, 200);
 </script>

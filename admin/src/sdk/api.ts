@@ -122,6 +122,25 @@ export class ApiSDK {
 			return null;
 		}
 	}
+
+	async updatePainting(id: string, data: TUpdatePainting, token: string): Promise<bool> {
+		try {
+			const response = await axios.patch(
+				`${this.url}/api/v1.0/paintings/${id}`,
+				data,
+				{
+					headers: {
+						'Authorization': `Bearer ${token}`,
+					}
+				}
+			);
+			return true;
+		} catch (error) {
+			console.error(error);
+			window.alert('Jejda, něco se pokazilo!');
+			return false;
+		}
+	}
 }
 
 export type TTranslation = {
@@ -190,4 +209,14 @@ export type TPaintingStub = {
 export type TPaintingDetail = {
 	painting: TPaintingStub;
 	images: TPaintingImage[];
+};
+
+export type TUpdatePainting = {
+	title_cs?: string;
+	title_en?: string;
+	description_cs?: string;
+	description_en?: string;
+	height?: number;
+	width?: number;
+	price?: number;
 };

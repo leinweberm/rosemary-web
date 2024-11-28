@@ -1,14 +1,10 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core';
-import type {TPaintingStub} from "../sdk/api.ts";
+import type {TEventPaintingInformation, TEventPaintingInformationKey} from "../composable/painting/paintingChangeEvent.ts";
 
-type TEventKey = keyof TPaintingStub;
-export type TEventPaintingInformation = {
-	key: TEventKey;
-	value: number;
-};
+
 const emits = defineEmits<{
-	(e: 'modelUpdate', value: TEventPaintingInformation)
+	(e: 'modelUpdate', value: TEventPaintingInformation): void
 }>();
 const props = defineProps<{
 	imageSrc?: string,
@@ -18,7 +14,7 @@ const props = defineProps<{
 	edit: boolean,
 }>();
 
-const debouncedModelUpdate = useDebounceFn((key: TEventKey, value: number) => {
+const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, value: number) => {
 	emits('modelUpdate', {key, value});
 }, 200);
 </script>
@@ -50,7 +46,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventKey, value: number) => {
 					:readonly="!props.edit"
 					variant="outlined"
 					:bg-color="(props.edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('price', $event)"
+					@update:modelValue="debouncedModelUpdate('price', parseInt($event))"
 				></v-text-field>
 				<v-text-field
 					:model-value="props.height"
@@ -61,7 +57,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventKey, value: number) => {
 					:readonly="!edit"
 					variant="outlined"
 					:bg-color="(edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('height', $event)"
+					@update:modelValue="debouncedModelUpdate('height', parseInt($event))"
 				></v-text-field>
 				<v-text-field
 					:model-value="props.width"
@@ -72,7 +68,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventKey, value: number) => {
 					:readonly="!edit"
 					variant="outlined"
 					:bg-color="(edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('width', $event)"
+					@update:modelValue="debouncedModelUpdate('width', parseInt($event))"
 				></v-text-field>
 			</v-col>
 		</v-row>

@@ -2,14 +2,25 @@
 import {useRoute, useRouter} from 'vue-router';
 import {inject, onMounted, ref} from "vue";
 import {ApiSDK as SDK, TPaintingDetail, TUploadImagePaintingQuery} from "../../sdk/api.ts";
-// import {useUserStore} from "../../stores/userStore.ts";
 import {routesOpts} from "../../router/router.ts";
 import {processInputImageFiles} from "../../composable/image/resize.ts";
-// import {uploadPaintingImages} from "../../composable/image/uploadMultiple.ts";
-import PaintingImageRow, {TEventPaintingImageRow} from "../../components/PaintingImageRow.vue";
-import PaintingTranslations, {TEventPaintingTranslations} from "../../components/PaintingTranslations.vue";
-import PaintingInformation, {TEventPaintingInformation} from "../../components/PaintingInformation.vue";
+import PaintingTranslations  from "../../components/PaintingTranslations.vue";
+import PaintingInformation from "../../components/PaintingInformation.vue";
+import PaintingImageRow from "../../components/PaintingImageRow.vue";
+import {useUserStore} from "../../stores/userStore.ts";
+import {PaintingSave} from "../../composable/painting/paintingSave.ts";
+import {isEqual} from "lodash";
+import {
+	handleExistingImageFormEvent,
+	handleNewImageFormEvent,
+	type TEventPaintingImageRow
+} from "../../composable/image/imageChangeEvent.ts";
+import {
+	handleExistingPaintingFormEvent,
+	type TEventPaintingInformation
+} from "../../composable/painting/paintingChangeEvent.ts";
 
+const userStore = useUserStore();
 const route = useRoute();
 const router = useRouter();
 const ApiSDK: SDK | undefined = inject<SDK>('ApiSDK');
@@ -23,6 +34,8 @@ const newImages = ref<File[]>([]);
 const newImagesPreviews = ref<string[]>([]);
 const newImagesMetadata = ref<TUploadImagePaintingQuery[]>([]);
 const loaded = ref<boolean>(false);
+const saveSteps = ref<number>(0);
+const saveProgress = ref<number>(0);
 
 const fetchPainting = async (id: string) => {
 	const data = await ApiSDK?.getPaintingDetail(id);
@@ -39,31 +52,33 @@ const handleFileInput = async () => {
 	newImagesMetadata.value = [...data];
 }
 
-const handlePaintingTranslationsChange = (event: TEventPaintingTranslations): void => {
-	painting.value.painting[event.key][event.lang] = event.value;
-	dirty.value = true;
-};
-
 const handlePaintingInfoChange = (event: TEventPaintingInformation): void => {
-	painting.value.painting[event.key] = event.value;
-	dirty.value = true;
+	if (painting.value?.painting) {
+		// @ts-expect-error
+		handleExistingPaintingFormEvent(painting, event);
+		dirty.value = true;
+	}
 };
 
 const handleExistingFilesChange = (event: TEventPaintingImageRow, index: number): void => {
-	painting.value?.images[index][event.key] = event.value;
-	dirty.value = true;
+	if (painting.value?.images[index]) {
+		painting.value.images[index] = handleExistingImageFormEvent(painting.value.images[index], event);
+		dirty.value = true;
+	}
 };
 
 const handleNewFilesChange = (event: TEventPaintingImageRow, index: number): void => {
-	newImagesMetadata.value[index][event.key] = event.value;
-	dirty.value = true;
+	if (newImagesMetadata.value[index]) {
+		newImagesMetadata.value[index] = handleNewImageFormEvent(newImagesMetadata.value[index], event);
+		dirty.value = true;
+	}
 };
 
 const handlePreviewChange = (index: number, isNew: boolean): void => {
 	if (isNew) {
 		newImagesMetadata.value[index].preview = 'true';
-		previewUrl.value = newImagesPreviews[index];
-	} else {
+		previewUrl.value = newImagesPreviews.value[index];
+	} else if (painting.value?.images[index]) {
 		painting.value.images[index].preview = true;
 		previewUrl.value = `${ApiSDK?.staticUrl}/${painting.value?.images[index].urls[0]}`;
 	}
@@ -72,12 +87,12 @@ const handlePreviewChange = (index: number, isNew: boolean): void => {
 
 	const findNewIndex = newImagesMetadata.value.findIndex((el) => el.preview === 'true');
 	if (findNewIndex > -1) {
-		newImagesMetadata.value[findNewIndex] = 'false';
+		newImagesMetadata.value[findNewIndex].preview = 'false';
 		return;
 	}
 
-	const findExistingIndex =  painting.value.images.findIndex((el) => el.preview);
-	if (findExistingIndex > -1) {
+	const findExistingIndex =  painting?.value?.images.findIndex((el) => el.preview);
+	if (findExistingIndex && findExistingIndex > -1 && painting?.value?.images[findExistingIndex]) {
 		painting.value.images[findExistingIndex].preview = false;
 		return;
 	}
@@ -92,6 +107,56 @@ const cancelEdit = async () => {
 };
 
 const save = async () => {
+	await userStore.authRouteAccess();
+	const token = userStore.getUser?.token;
+	if (!token || !painting.value || !originalPainting.value) {
+		return;
+	}
+
+	const existingImagesChanged: string[] = [];
+	const existingImagesRemoved: string[] = [];
+	let paintingChanged = false;
+	let tempSaveSteps = 0;
+
+	if (!isEqual(painting.value, originalPainting.value)) {
+		paintingChanged = true;
+		for (let i = 0, length = originalPainting.value.images.length; i < length; i++) {
+			const originalImage = originalPainting.value.images[i];
+			const newImage = painting.value.images.find((el) => el.urls[0] === originalImage.urls[0]);
+			if (newImage) {
+				if (!isEqual(newImage, originalImage)) {
+					existingImagesChanged.push(originalImage.id);
+				}
+			} else {
+				existingImagesRemoved.push(originalImage.id);
+			}
+		}
+		tempSaveSteps += (1 + existingImagesChanged.length + existingImagesRemoved.length);
+	}
+
+	if (newImages.value.length) {
+		tempSaveSteps += newImages.value.length;
+	}
+
+	saveSteps.value = tempSaveSteps;
+	const stepValue = Math.ceil(100 / tempSaveSteps);
+
+	const saveHandler = new PaintingSave(token);
+	saveHandler.addEventListener('saveProgress', () => {
+		saveProgress.value += stepValue;
+	});
+
+	try {
+		await saveHandler.updateImage(painting.value, originalPainting.value);
+	} catch (error) {
+		saveHandler.removeEventListener('saveProgress', null);
+		return;
+	}
+	if (paintingChanged) {
+
+	}
+
+	saveHandler.removeEventListener('saveProgress', null);
 	edit.value = false;
 };
 
@@ -149,10 +214,10 @@ onMounted(async () => {
 				:title-en="painting.painting.painting_title.en"
 				:description-cs="painting.painting.painting_description.cs"
 				:description-en="painting.painting.painting_description.en"
-				@model-update="handlePaintingTranslationsChange($event)"
+				@model-update="handlePaintingInfoChange($event)"
 			/>
 
-			<!-- INFORMATIONS -->
+			<!-- INFORMATION -->
 			<PaintingInformation
 				v-if="painting"
 				:image-src="previewUrl"
@@ -227,7 +292,7 @@ onMounted(async () => {
 								:alt-en="meta.alt_en"
 								:edit="edit"
 								@modelUpdate="handleNewFilesChange($event, mIndex)"
-								@preview-select="handlePreviewChange(pIndex, true)"
+								@preview-select="handlePreviewChange(mIndex, true)"
 							/>
 						</div>
 					</v-col>
