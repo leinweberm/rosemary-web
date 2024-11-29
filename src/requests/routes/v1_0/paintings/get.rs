@@ -103,5 +103,4 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 			uuid
 		})
 		.and_then(get_painting)
-		.with(warp::log("api"))
 }

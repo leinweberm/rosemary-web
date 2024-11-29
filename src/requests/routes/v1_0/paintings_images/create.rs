@@ -254,5 +254,4 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and_then(|params: ImageMetaQuery, data: FormData, _claims: Claims| async move {
 			create_painting_image(data, params).await
 		})
-		.with(warp::log("api"))
 }

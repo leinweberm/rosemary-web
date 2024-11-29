@@ -46,5 +46,4 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and_then(|painting: PaintingCreate, _claims: Claims| async move {
 			create_painting(painting).await
 		})
-		.with(warp::log("api"))
 }

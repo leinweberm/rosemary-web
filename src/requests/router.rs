@@ -18,6 +18,8 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
 	.or(requests::routes::v1_0::paintings::delete::delete())
 	// POST /api/v1.0/images
 	.or(requests::routes::v1_0::paintings_images::create::create())
+	// PATCH /api/v1.0/images/:Uuid
+	.or(requests::routes::v1_0::paintings_images::update::update())
 	// GET /api/v1.0/images/painting/:Uuid
 	.or(requests::routes::v1_0::paintings_images::get_painting_images::get())
 	// DELETE /api/v1.0/images/Uuid
@@ -34,4 +36,6 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
 	.recover(handle_rejection)
 	// Allow CORS
 	.with(settings())
+	// Logging
+	.with(warp::log("api"))
 }

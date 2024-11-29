@@ -11,11 +11,7 @@ export class ApiSDK {
 		const response = await axios.post(
 			`${this.url}/api/v1.0/users/login`,
 			{ username, password },
-			{
-				headers: {
-					'Content-Type': 'application/json',
-				}
-			}
+			{headers: {'Content-Type': 'application/json'}}
 		);
 
 		if (response.status === 200) {
@@ -30,11 +26,10 @@ export class ApiSDK {
 	}
 
 	async refreshToken(token: string): Promise<any> {
-		const response = await axios.get(`${this.url}/api/v1.0/users/refresh/token`, {
-			headers: {
-				'Authorization': `Bearer ${token}`,
-			}
-		});
+		const response = await axios.get(
+			`${this.url}/api/v1.0/users/refresh/token`,
+			{headers: {'Authorization': `Bearer ${token}`}}
+		);
 		if (response.status === 200 && response.data.token) {
 			return response.data.token;
 		} else {
@@ -73,11 +68,7 @@ export class ApiSDK {
 			const response = await axios.postForm(
 				`${this.url}/api/v1.0/images?${queryObj.toString()}`,
 				{file},
-				{
-					headers: {
-						'Authorization': `Bearer ${token}`,
-					}
-				}
+				{headers: {'Authorization': `Bearer ${token}`}}
 			);
 			if (response.status !== 201 || response.data.status !== 'Success') {
 				window.alert('Nepovedlo se nahrát fotografii obrazu');
@@ -97,9 +88,7 @@ export class ApiSDK {
 		try {
 			const response = await axios.get<TPaginatedResult<TPaintingStub>>(
 					`${this.url}/api/v1.0/paintings?${queryObj.toString()}`,
-				{
-					headers: {}
-				}
+				{headers: {}}
 			);
 			return response.data;
 		} catch (error) {
@@ -123,16 +112,51 @@ export class ApiSDK {
 		}
 	}
 
-	async updatePainting(id: string, data: TUpdatePainting, token: string): Promise<bool> {
+	async updatePainting(id: string, data: TUpdatePainting, token: string): Promise<boolean> {
 		try {
-			const response = await axios.patch(
+			await axios.patch(
 				`${this.url}/api/v1.0/paintings/${id}`,
 				data,
 				{
 					headers: {
 						'Authorization': `Bearer ${token}`,
+						'Content-Type': 'application/json',
 					}
 				}
+			);
+			return true;
+		} catch (error) {
+			console.error(error);
+			window.alert('Jejda, něco se pokazilo!');
+			return false;
+		}
+	}
+
+	async updatePaintingImage(data: TUpdatePainting, id: string, token: string): Promise<boolean> {
+		try {
+			await axios.patch(
+				`${this.url}/api/v1.0/images/${id}`,
+				data,
+				{
+					headers: {
+						'Authorization': `Bearer ${token}`,
+						'Content-Type': 'application/json',
+					}
+				}
+			);
+			return true;
+		} catch (error) {
+			console.error(error);
+			window.alert('Jejda, něco se pokazilo!');
+			return false;
+		}
+	}
+
+	async removePaintingImage(id: string, token: string): Promise<boolean> {
+		try {
+			await axios.delete(
+				`${this.url}/api/v1.0/images/${id}`,
+				{headers: {'Authorization': `Bearer ${token}`}}
 			);
 			return true;
 		} catch (error) {
@@ -219,4 +243,12 @@ export type TUpdatePainting = {
 	height?: number;
 	width?: number;
 	price?: number;
+};
+
+export type TUpdatePaintingImage = {
+	alt_cs?: string;
+	alt_en?: string;
+	title_cs?: string;
+	title_en?: string;
+	preview?: boolean;
 };

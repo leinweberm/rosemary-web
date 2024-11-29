@@ -8,7 +8,6 @@ import PaintingTranslations  from "../../components/PaintingTranslations.vue";
 import PaintingInformation from "../../components/PaintingInformation.vue";
 import PaintingImageRow from "../../components/PaintingImageRow.vue";
 import {useUserStore} from "../../stores/userStore.ts";
-import {PaintingSave} from "../../composable/painting/paintingSave.ts";
 import {isEqual} from "lodash";
 import {
 	handleExistingImageFormEvent,
@@ -19,6 +18,8 @@ import {
 	handleExistingPaintingFormEvent,
 	type TEventPaintingInformation
 } from "../../composable/painting/paintingChangeEvent.ts";
+// @ts-ignore
+import {PaintingSave} from "../../composable/painting/paintingSave.ts";
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -36,6 +37,8 @@ const newImagesMetadata = ref<TUploadImagePaintingQuery[]>([]);
 const loaded = ref<boolean>(false);
 const saveSteps = ref<number>(0);
 const saveProgress = ref<number>(0);
+const isSaving = ref<number>(0);
+const savingDialogText = ref<string>('PROBÍHÁ UKLÁDÁNÍ');
 
 const fetchPainting = async (id: string) => {
 	const data = await ApiSDK?.getPaintingDetail(id);
@@ -75,16 +78,6 @@ const handleNewFilesChange = (event: TEventPaintingImageRow, index: number): voi
 };
 
 const handlePreviewChange = (index: number, isNew: boolean): void => {
-	if (isNew) {
-		newImagesMetadata.value[index].preview = 'true';
-		previewUrl.value = newImagesPreviews.value[index];
-	} else if (painting.value?.images[index]) {
-		painting.value.images[index].preview = true;
-		previewUrl.value = `${ApiSDK?.staticUrl}/${painting.value?.images[index].urls[0]}`;
-	}
-
-	dirty.value = true;
-
 	const findNewIndex = newImagesMetadata.value.findIndex((el) => el.preview === 'true');
 	if (findNewIndex > -1) {
 		newImagesMetadata.value[findNewIndex].preview = 'false';
@@ -96,6 +89,16 @@ const handlePreviewChange = (index: number, isNew: boolean): void => {
 		painting.value.images[findExistingIndex].preview = false;
 		return;
 	}
+
+	if (isNew) {
+		newImagesMetadata.value[index].preview = 'true';
+		previewUrl.value = newImagesPreviews.value[index];
+	} else if (painting.value?.images[index]) {
+		painting.value.images[index].preview = true;
+		previewUrl.value = `${ApiSDK?.staticUrl}/${painting.value?.images[index].urls[0]}`;
+	}
+
+	dirty.value = true;
 };
 
 const cancelEdit = async () => {
@@ -107,13 +110,18 @@ const cancelEdit = async () => {
 };
 
 const save = async () => {
+	// @ts-expect-error
+	const valid = await paintingForm.value.validate();
+	if (!valid) return;
+
+	isSaving.value = 1;
 	await userStore.authRouteAccess();
 	const token = userStore.getUser?.token;
 	if (!token || !painting.value || !originalPainting.value) {
 		return;
 	}
 
-	const existingImagesChanged: string[] = [];
+	const existingImagesChanged: Array<{oldIndex: number, newIndex: number}> = [];
 	const existingImagesRemoved: string[] = [];
 	let paintingChanged = false;
 	let tempSaveSteps = 0;
@@ -122,10 +130,10 @@ const save = async () => {
 		paintingChanged = true;
 		for (let i = 0, length = originalPainting.value.images.length; i < length; i++) {
 			const originalImage = originalPainting.value.images[i];
-			const newImage = painting.value.images.find((el) => el.urls[0] === originalImage.urls[0]);
-			if (newImage) {
-				if (!isEqual(newImage, originalImage)) {
-					existingImagesChanged.push(originalImage.id);
+			const updatedImageIndex = painting.value.images.findIndex((el) => el.id === originalImage.id);
+			if (updatedImageIndex && updatedImageIndex > -1) {
+				if (!isEqual(painting.value.images[updatedImageIndex], originalImage)) {
+					existingImagesChanged.push({oldIndex: i, newIndex: updatedImageIndex});
 				}
 			} else {
 				existingImagesRemoved.push(originalImage.id);
@@ -143,21 +151,45 @@ const save = async () => {
 
 	const saveHandler = new PaintingSave(token);
 	saveHandler.addEventListener('saveProgress', () => {
-		saveProgress.value += stepValue;
+		if ((saveProgress.value + stepValue) > 100) {
+			saveProgress.value += stepValue;
+		} else {
+			saveProgress.value = 100;
+		}
 	});
 
 	try {
-		await saveHandler.updateImage(painting.value, originalPainting.value);
+		if (paintingChanged) {
+			await saveHandler.updatePainting(painting.value, originalPainting.value);
+			for (let i = 0, length = existingImagesRemoved.length; i < length; i++) {
+				await saveHandler.updateImage(
+					originalPainting.value.images[existingImagesChanged[i].oldIndex],
+					painting.value.images[existingImagesChanged[i].newIndex]
+				);
+			}
+			for (let i = 0, length = existingImagesRemoved.length; i < length; i++) {
+				await saveHandler.removeImage(existingImagesRemoved[i]);
+			}
+		}
+		for (let i = 0, length = newImages.value.length; i < length; i++) {
+			await saveHandler.uploadImage(
+				newImages.value[i],
+				newImagesMetadata.value[i],
+				painting.value.painting.id
+			);
+		}
 	} catch (error) {
 		saveHandler.removeEventListener('saveProgress', null);
 		return;
 	}
-	if (paintingChanged) {
-
-	}
 
 	saveHandler.removeEventListener('saveProgress', null);
+	savingDialogText.value = 'Uloženo';
+	isSaving.value = 2;
 	edit.value = false;
+};
+const openDetail = () => {
+	location.reload();
 };
 
 onMounted(async () => {
@@ -300,4 +332,29 @@ onMounted(async () => {
 			</v-container>
 		</v-card>
 	</v-form>
+
+	<dialog v-if="isSaving" id="savingDialog" class="elevation-7">
+		<div style="width: 100%">
+			<h2 style="text-align: center">{{ savingDialogText }}</h2>
+		</div>
+		<div style="width: 100%; display: flex; align-items: center; margin-top: 20px">
+			<v-progress-linear
+				color="amber"
+				height="50"
+				v-model="saveProgress"
+			>
+				<strong>{{ Math.ceil(saveProgress) }}%</strong>
+			</v-progress-linear>
+		</div>
+		<v-btn
+			v-if="isSaving === 2"
+			variant="elevated"
+			size="large"
+			color="success"
+			style="margin-top: 20px"
+			@click.stop="openDetail"
+		>
+			OK
+		</v-btn>
+	</dialog>
 </template>

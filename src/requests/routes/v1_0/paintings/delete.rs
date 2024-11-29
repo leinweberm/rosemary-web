@@ -47,5 +47,4 @@ pub fn delete() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and_then(|painting_uid: Uuid, params: PaintingDelete, _claims: Claims| async move {
 			delete_painting(painting_uid, params).await
 		})
-		.with(warp::log("api"))
 }

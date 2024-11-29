@@ -92,5 +92,4 @@ pub fn delete() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and_then(|id: Uuid, _claims: Claims| async move {
 			delete_painting_image(id).await
 		})
-		.with(warp::log("api"))
 }
