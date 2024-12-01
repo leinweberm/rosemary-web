@@ -1,5 +1,6 @@
 /target
-/static
+/static/admin
+/static/images
 /certs/*
 src/certs/*
 .env

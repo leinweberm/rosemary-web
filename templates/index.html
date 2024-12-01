@@ -9,17 +9,19 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="file:///home/leinweberm/Documents/personal/Rust-rest-API/www/static/main.css">
-	<script src="file:///home/leinweberm/Documents/personal/Rust-rest-API/www/static/main.js"></script>
+	<link rel="stylesheet" href="http://static.localhost/assets/main.css">
+	<script src="http://static.localhost/assets/main.js"></script>
 </head>
 
 <body>
 	<!-- NAV START -->
 	<nav id="nav">
+		<div id="navBackground"></div>
+		<div id="navDecorativeLine"></div>
 		<div id="navDesktopLinks">
-			<a href="/">home</a>
-			<a href="/gallery">gallery</a>
-			<a href="/contact">contact</a>
+			<a href="/">HOME</a>
+			<a href="/gallery">GALLERY</a>
+			<a href="/contact">CONTACT</a>
 		</div>
 		<label for="navToggleCheckbox"></label><input
 			type="checkbox"
@@ -32,23 +34,60 @@
 				height="40px"
 				viewBox="0 -960 960 960"
 				width="40px"
-				fill="black"
+				fill="white"
 			>
 				<path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z"/>
 			</svg>
 		</div>
 		<ul id="navToggleMenu">
-			<li><a href="/">home</a></li>
-			<li><a href="/gallery">gallery</a></li>
-			<li><a href="/contact">contact</a></li>
+			<li><a href="/">HOME</a></li>
+			<li><a href="/gallery">GALLERY</a></li>
+			<li><a href="/contact">CONTACT</a></li>
 		</ul>
 	</nav>
+
 	<!-- CONTENT START -->
 	<div class="contentContainer">
-		<h1>Hello World</h1>
+		<img
+			id="heroBanner"
+			src="http://static.localhost/images/herobaner_1920.jpeg"
+			alt="rosemary artist hero landing page banner"
+		/>
+		<h1>Rosemary</h1>
 	</div>
 	<!-- FOOTER START -->
-	<footer>
+	<footer id="footer">
+		<section>
+			<div>
+				<span>
+					<b>CONTACT</b>
+					<p>rosemaryphotography@seznam.cz</p>
+					<a href="https://www.instagram.com/rozmarynamaluje/">
+						instagram
+					</a>
+					<a href="https://www.facebook.com/p/Rozmar%C3%BDna-maluje-100077482535221/">
+						facebook
+					</a>
+				</span>
+			</div>
+			<div>
+				<span>
+					<b>FAQ</b>
+					<a href="/upcomin-events">upcoming events</a>
+					<a href="/photo-pricing">photo pricing</a>
+					<a href="/photo-reservation">photo reservation</a>
+				</span>
+			</div>
+			<div>
+				<span>
+					<b>NAVIGATION</b>
+					<a href="/contact">home page</a>
+					<a href="/gallery">paintings</a>
+					<a href="/photo">photo</a>
+					<a href="/blog">contact</a>
+				</span>
+			</div>
+		<section>
 	</footer>
 </body>
 

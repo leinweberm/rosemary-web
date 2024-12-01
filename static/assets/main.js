@@ -1,5 +1,6 @@
 let lastScroll = 0;
 let navHidden = false;
+let isNavBig = true;
 
 const prepareNavbarCheckbox = () => {
 	const checkbox = document.querySelector('#navToggleCheckbox');
@@ -16,12 +17,13 @@ const prepareNavbarPosition = () => {
 	const nav = document.querySelector('#nav');
 	nav && window.addEventListener('scroll', () => {
 		let scroll = Math.round(window.scrollY);
-		if (scrollY > lastScroll && !navHidden) {
-			nav.style.top = '-60px';
-			navHidden = true;
-		} else if (scrollY < lastScroll && navHidden) {
-			nav.style.top = '0';
-			navHidden = false;
+		console.log('scroll', scroll);
+		if (scroll > lastScroll && isNavBig) {
+			nav.classList.add('navSmall');
+			isNavBig = false;
+		} else if (scroll < lastScroll && !isNavBig) {
+			nav.classList.remove('navSmall');
+			isNavBig = true;
 		}
 		lastScroll = scroll;
 	});
