@@ -17,7 +17,6 @@ export const useUserStore = defineStore('user', () => {
 	const router = useRouter();
 
 	const getUser = computed(() => {
-		console.log('user computed', user.value);
 		return user.value;
 	});
 
@@ -28,7 +27,6 @@ export const useUserStore = defineStore('user', () => {
 			user.value = null;
 			return;
 		}
-		console.log('auth guard - apiSDK OK');
 
 		if (!user.value) {
 			let checkSession = sessionStorage.getItem('user');
@@ -38,20 +36,16 @@ export const useUserStore = defineStore('user', () => {
 				if (checkSession && checkSession.token && checkSession.ui && checkSession.tokenExpiration) {
 					// @ts-expect-error
 					user.value = {ui: checkSession.ui, token: checkSession.token, tokenExpiration: checkSession.tokenExpiration};
-					console.log('auth guard - loaded user from session OK');
 				}
 			}
 		}
 
 		if (!user.value || !user.value.token || !user.value.tokenExpiration) {
-			console.log('no valid user provided');
 			user.value = null;
 			return;
 		}
 
 		if (now >= user.value.tokenExpiration) {
-			console.log('expired token', now, user.value.tokenExpiration);
-			console.log(new Date(now).toISOString(), new Date(user.value.tokenExpiration).toISOString());
 			user.value = null;
 			return false;
 		}

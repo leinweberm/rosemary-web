@@ -96,8 +96,10 @@ impl PaintingImage {
 			values.push(format!("status = '{}'", new_status));
 		};
 
+		debug!(target: "db", "preview {:?}", &data.preview);
 		if let Some(preview) = data.preview {
-			values.push(format!("preview = {}", preview));
+			debug!(target: "db", "preview update {}", &preview);
+			values.push(format!("preview = {}", preview))
 		};
 
 		if let (Some(cs), Some(en)) = (data.alt_cs.as_ref(), data.alt_en.as_ref()) {
@@ -133,7 +135,7 @@ impl PaintingImage {
 		}
 
 		query.push_str(&values.join(", "));
-		query.push_str(&format!(" WHERE id = '{}' AND deleted IS NULL RETURNING *;", id));
+		query.push_str(&format!(" WHERE id = '{}' RETURNING *;", id));
 		query
 	}
 

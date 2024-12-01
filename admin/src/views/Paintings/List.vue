@@ -5,6 +5,12 @@ import {ApiSDK as SDK, TListPaintingQuery, TPaintingStub} from "../../sdk/api.ts
 import {routesOpts} from "../../router/router.ts";
 
 type TSortBy = 'price' | 'width' | 'height' | 'title' | 'created' | 'sold' | 'description';
+type THeader = {
+	align?: 'start' | 'center' | 'end';
+	sortable?: boolean;
+	title: string;
+	key: string;
+};
 
 type TTableEvent = {
 	page: number;
@@ -49,7 +55,7 @@ const fetchPaintings = async () => {
 	loading.value = false;
 };
 
-const headers = [
+const headers: THeader[] = [
 	{
 		title: 'Náhled',
 		key: 'preview',
@@ -187,10 +193,6 @@ onMounted(async () => {
 }
 
 .previewPaintingImage:hover {
-	border: 2px solid transparent;
-	transform: scale(1.2);
-	position: absolute;
-	top: 25px;
-	transition: transition ease-in-out 200ms;
+	border: 2px solid gold;
 }
 </style>

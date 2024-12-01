@@ -1,4 +1,5 @@
 import './style.css';
+// @ts-expect-error ignore missing declaration types in css file
 import 'vuetify/styles';
 import { aliases, mdi } from 'vuetify/iconsets/mdi';
 import { createVuetify } from 'vuetify';

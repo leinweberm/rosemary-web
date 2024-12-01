@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useUserStore } from '../stores/userStore';
 import { useRouter } from 'vue-router';
 
@@ -30,7 +30,6 @@ const login = async () => {
 	}
 
 	const loggedIn = await userStore.login(username.value, password.value);
-	console.log('loggedIn', loggedIn);
 
 	if (loggedIn) {
 		loginForm.value.reset();
@@ -46,12 +45,16 @@ const login = async () => {
 				v-model="username"
 				label="Uživatelské jméno"
 				:rules="nameRules"
+				variant="outlined"
+				bg-color="grey-lighten-3"
 				required
 			></v-text-field>
 			<v-text-field
 				v-model="password"
 				label="Heslo"
 				:rules="passwordRules"
+				variant="outlined"
+				bg-color="grey-lighten-3"
 				type="password"
 				required
 			></v-text-field>

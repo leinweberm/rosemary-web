@@ -11,6 +11,7 @@ import {TEventPaintingInformation} from "../../composable/painting/paintingChang
 import {processInputImageFiles} from "../../composable/image/resize.ts";
 import {handleNewImageFormEvent, TEventPaintingImageRow} from "../../composable/image/imageChangeEvent.ts";
 import {PaintingSave} from "../../composable/painting/paintingSave.ts";
+import SavingDialog from "../../components/SavingDialog.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -28,7 +29,6 @@ const newImagesPreviews = ref<string[]>([]);
 const newImagesMetadata = ref<TUploadImagePaintingQuery[]>([]);
 const previewUrl = ref<string>('');
 const isSaving = ref<number>(0);
-const savingDialogText = ref<string>('PROBÍHÁ UKLÁDÁNÍ');
 const paintingId = ref<string>('');
 const ApiSDK: SDK | undefined = inject<SDK>('ApiSDK');
 const saveSteps = ref<number>(0);
@@ -46,12 +46,13 @@ const handleNewFilesChange = (event: TEventPaintingImageRow, index: number): voi
 	}
 };
 
-const handlePreviewChange = (index: number) => {
+const handlePreviewChange = (index: number): void => {
 	const findPreviewIndex = newImagesMetadata.value.findIndex((el) => el.preview === 'true');
 	if (findPreviewIndex > -1) {
 		newImagesMetadata.value[findPreviewIndex].preview = 'false';
 	}
 	newImagesMetadata.value[index].preview = 'true';
+	previewUrl.value = newImagesPreviews.value[index];
 }
 
 const handlePaintingInfoChange = (event: TEventPaintingInformation): void => {
@@ -72,7 +73,13 @@ const handlePaintingInfoChange = (event: TEventPaintingInformation): void => {
 	}
 };
 
-const validateForm = async () => {
+const handleRemoveImage = (index: number): void => {
+	newImages.value.splice(index, 1);
+	newImagesPreviews.value.splice(index, 1);
+	newImagesMetadata.value.splice(index, 1);
+};
+
+const validateForm = async (): Promise<boolean> => {
 	// @ts-expect-error
 	const valid = await paintingForm.value.validate();
 	if (!valid) {
@@ -94,7 +101,7 @@ const validateForm = async () => {
 	return true;
 };
 
-const save = async () => {
+const save = async (): Promise<void> => {
 	const valid = await validateForm();
 	if (!valid) return;
 
@@ -122,11 +129,13 @@ const save = async () => {
 			width: width.value,
 			height: height.value
 		});
+
+		paintingId.value = created.data.id;
 		for (let i = 0, length = newImages.value.length; i < length; i++) {
 			await saveHandler.uploadImage(
 				newImages.value[i],
 				newImagesMetadata.value[i],
-				created.id as string
+				created.data.id as string
 			);
 		}
 	} catch (error) {
@@ -135,11 +144,10 @@ const save = async () => {
 	}
 
 	saveHandler.removeEventListener('saveProgress', null);
-	savingDialogText.value = 'Uloženo';
 	isSaving.value = 2;
 };
 
-const openDetail = () => {
+const openDetail = (): void => {
 	router.push({
 		name: routesOpts.P_DETAIL,
 		params: {id: paintingId.value},
@@ -160,25 +168,28 @@ const openDetail = () => {
 	</div>
 
 	<v-form ref="paintingForm">
-		<!-- TRANSLATIONS -->
-		<PaintingTranslations
-			:edit="true"
-			:title-cs="title_cs"
-			:title-en="title_en"
-			:description-cs="description_cs"
-			:description-en="description_en"
-			@model-update="handlePaintingInfoChange($event)"
-		/>
+		<div class="entryGrid">
+			<!-- TRANSLATIONS -->
+			<PaintingTranslations
+				:edit="true"
+				:title-cs="title_cs"
+				:title-en="title_en"
+				:description-cs="description_cs"
+				:description-en="description_en"
+				@model-update="handlePaintingInfoChange($event)"
+			/>
 
-		<!-- INFORMATION	-->
-		<PaintingInformation
-			:price="price"
-			:height="height"
-			:width="width"
-			:edit="true"
-			:image-src="previewUrl"
-			@model-update="handlePaintingInfoChange($event)"
-		/>
+			<!-- INFORMATION	-->
+			<PaintingInformation
+				:price="price"
+				:height="height"
+				:width="width"
+				:edit="true"
+				:image-src="previewUrl"
+				@model-update="handlePaintingInfoChange($event)"
+			/>
+		</div>
+
 		<v-card>
 			<v-card-title>Nové soubory</v-card-title>
 			<v-container>
@@ -214,6 +225,7 @@ const openDetail = () => {
 								:edit="true"
 								@modelUpdate="handleNewFilesChange($event, mIndex)"
 								@preview-select="handlePreviewChange(mIndex)"
+								@remove-painting-image="handleRemoveImage(mIndex)"
 							/>
 						</div>
 					</v-col>
@@ -222,28 +234,9 @@ const openDetail = () => {
 		</v-card>
 	</v-form>
 
-	<dialog v-if="isSaving" id="savingDialog" class="elevation-7">
-		<div style="width: 100%">
-			<h2 style="text-align: center">{{ savingDialogText }}</h2>
-		</div>
-		<div style="width: 100%; display: flex; align-items: center; margin-top: 20px">
-			<v-progress-linear
-				color="amber"
-				height="50"
-				v-model="saveProgress"
-			>
-				<strong>{{ Math.ceil(saveProgress) }}%</strong>
-			</v-progress-linear>
-		</div>
-		<v-btn
-			v-if="isSaving === 2"
-			variant="elevated"
-			size="large"
-			color="success"
-			style="margin-top: 20px"
-			@click.stop="openDetail"
-		>
-			OK
-		</v-btn>
-	</dialog>
+	<SavingDialog
+		:is-saving="isSaving"
+		:save-progress="saveProgress"
+		:cb="openDetail"
+	/>
 </template>

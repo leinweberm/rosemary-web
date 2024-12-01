@@ -249,6 +249,7 @@ pub fn create() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and(path("images"))
 		.and(path::end())
 		.and(query::<ImageMetaQuery>())
+		.and(warp::body::content_length_limit(52_428_800))
 		.and(warp::multipart::form().max_length(52_428_800))
 		.and(jwt_auth())
 		.and_then(|params: ImageMetaQuery, data: FormData, _claims: Claims| async move {

@@ -20,7 +20,8 @@ pub fn settings () -> warp::cors::Builder {
 			"Origin",
 			"Sec-Fetch-Mode",
 			"Access-Control-Request-Method",
-			"Access-Control-Request-Headers"
+			"Access-Control-Request-Headers",
+			"Access-Control-Allow-Origin",
 		]);
 
 	cors

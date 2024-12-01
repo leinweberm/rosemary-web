@@ -45,7 +45,6 @@ export const router = createRouter({
 router.beforeEach(async (to, _from, next) => {
 	const userStore = useUserStore();
 	const validAccess = await userStore.authRouteAccess();
-	console.log('validAccess', validAccess);
 	if (to.name !== 'Login' && !validAccess) {
 		sessionStorage.clear();
 		next({name: routesOpts.Login})

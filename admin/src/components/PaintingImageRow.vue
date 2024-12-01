@@ -6,7 +6,8 @@ import type {TEventPaintingImageRow, TEventPaintingImageRowKey} from "../composa
 // const emits = defineEmits(['modelUpdate']);
 const emits = defineEmits<{
 	(e: 'modelUpdate', value: TEventPaintingImageRow ): void,
-	(e: 'previewSelect', value: boolean): void
+	(e: 'previewSelect', value: boolean): void,
+	(e: 'removePaintingImage'): void,
 }>();
 const props = defineProps<{
 	paintingId?: string,
@@ -26,7 +27,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingImageRowKey, valu
 </script>
 
 <template>
-	<div class="previewImageRow" v-if="imageUrl">
+	<div class="previewImageRow" style="position: relative;" v-if="imageUrl">
 		<div
 			class="previewImageRowInner"
 			@click.stop="emits('previewSelect', true)"
@@ -101,10 +102,21 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingImageRowKey, valu
 				</v-col>
 			</v-row>
 		</div>
+		<v-btn
+			class="removePaintingImageButton"
+			variant="tonal"
+			color="error"
+			@click="emits('removePaintingImage')"
+		>Odstranit</v-btn>
 	</div>
 	<v-divider style="margin: 20px 0"/>
 </template>
 
 <style scoped>
-
+.removePaintingImageButton {
+	z-index: 5;
+	position: absolute;
+	right: 30px;
+	bottom: 0;
+}
 </style>

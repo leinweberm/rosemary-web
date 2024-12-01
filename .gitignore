@@ -6,3 +6,4 @@ src/certs/*
 .env.prod
 /admin/node_modules
 /admin/.idea
+/admin/dist

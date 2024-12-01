@@ -2,8 +2,10 @@ import axios from "axios";
 import { TUser } from "../stores/userStore";
 
 export class ApiSDK {
-	private url:string = 'http://localhost';
-	staticUrl:string = 'http://static.localhost';
+	// @ts-ignore config env variable
+	private url:string = __API_ENDPOINT__;
+	// @ts-ignore config env variable
+	staticUrl:string = __API_ENDPOINT_STATIC__;
 
 	constructor() {}
 
@@ -124,6 +126,19 @@ export class ApiSDK {
 					}
 				}
 			);
+			return true;
+		} catch (error) {
+			console.error(error);
+			window.alert('Jejda, něco se pokazilo!');
+			return false;
+		}
+	}
+
+	async removePainting(id: string, token: string): Promise<boolean> {
+		try {
+			await axios.delete(
+				`${this.url}/api/v1.0/paintings/${id}?force=false`,
+				{headers: {'Authorization': `Bearer ${token}`}})
 			return true;
 		} catch (error) {
 			console.error(error);

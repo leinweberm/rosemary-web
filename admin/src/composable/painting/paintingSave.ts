@@ -40,17 +40,18 @@ export class PaintingSave extends EventTarget {
 		if (newData.painting.painting_description.en !== originalData.painting.painting_description.en) {
 			updateData.description_en = newData.painting.painting_description.cs;
 		}
-		if (newData.painting.price !== newData.painting.price) {
+		if (newData.painting.price !== originalData.painting.price) {
 			updateData.price = newData.painting.price;
 		}
-		if (newData.painting.height !== newData.painting.height) {
+		if (newData.painting.height !== originalData.painting.height) {
 			updateData.height = newData.painting.height;
 		}
-		if (newData.painting.width !== newData.painting.width) {
+		if (newData.painting.width !== originalData.painting.width) {
 			updateData.width = newData.painting.width;
 		}
 
-		if (!isEmpty(updateData)) {
+		if (isEmpty(updateData)) {
+			console.log('no valid fiels for update');
 			this.dispatchEvent(new Event('saveProgress'));
 			return;
 		}
@@ -91,7 +92,7 @@ export class PaintingSave extends EventTarget {
 			updateData.preview = updatedImage.preview;
 		}
 
-		if (!isEmpty(updateData)) {
+		if (isEmpty(updateData)) {
 			this.dispatchEvent(new Event('saveProgress'));
 			return;
 		}
@@ -117,7 +118,7 @@ export class PaintingSave extends EventTarget {
 				title_en: meta.title_en,
 				alt_cs: meta.alt_cs,
 				alt_en: meta.alt_en,
-				painting_id: id
+				painting_id: id,
 			},
 			this.token
 		);

@@ -8,18 +8,12 @@ import PaintingTranslations  from "../../components/PaintingTranslations.vue";
 import PaintingInformation from "../../components/PaintingInformation.vue";
 import PaintingImageRow from "../../components/PaintingImageRow.vue";
 import {useUserStore} from "../../stores/userStore.ts";
-import {isEqual} from "lodash";
-import {
-	handleExistingImageFormEvent,
-	handleNewImageFormEvent,
-	type TEventPaintingImageRow
-} from "../../composable/image/imageChangeEvent.ts";
-import {
-	handleExistingPaintingFormEvent,
-	type TEventPaintingInformation
-} from "../../composable/painting/paintingChangeEvent.ts";
-// @ts-ignore
+import {isEqual, cloneDeep} from "lodash";
+import {handleExistingImageFormEvent, handleNewImageFormEvent, type TEventPaintingImageRow} from "../../composable/image/imageChangeEvent.ts";
+import {handleExistingPaintingFormEvent, type TEventPaintingInformation} from "../../composable/painting/paintingChangeEvent.ts";
+// @ts-ignore IDK
 import {PaintingSave} from "../../composable/painting/paintingSave.ts";
+import SavingDialog from "../../components/SavingDialog.vue";
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -38,14 +32,13 @@ const loaded = ref<boolean>(false);
 const saveSteps = ref<number>(0);
 const saveProgress = ref<number>(0);
 const isSaving = ref<number>(0);
-const savingDialogText = ref<string>('PROBÍHÁ UKLÁDÁNÍ');
 
 const fetchPainting = async (id: string) => {
 	const data = await ApiSDK?.getPaintingDetail(id);
 	if (data) {
-		painting.value = {...data};
-		originalPainting.value = {...data};
-		previewUrl.value = painting.value.painting.preview.urls[0];
+		painting.value = cloneDeep(data);
+		originalPainting.value = cloneDeep(data);
+		previewUrl.value = `${ApiSDK?.staticUrl}/${painting.value.painting.preview.urls[0]}`;
 	}
 };
 
@@ -77,17 +70,31 @@ const handleNewFilesChange = (event: TEventPaintingImageRow, index: number): voi
 	}
 };
 
+const handleRemovePaintingImage = (index: number, isNew: boolean): void => {
+	edit.value = true;
+	if (isNew) {
+		newImages.value.splice(index, 1);
+		newImagesPreviews.value.splice(index, 1);
+		newImagesMetadata.value.splice(index, 1);
+	} else if (painting.value) {
+		painting.value.images.splice(index, 1);
+	}
+};
+
 const handlePreviewChange = (index: number, isNew: boolean): void => {
+	edit.value = true;
 	const findNewIndex = newImagesMetadata.value.findIndex((el) => el.preview === 'true');
 	if (findNewIndex > -1) {
 		newImagesMetadata.value[findNewIndex].preview = 'false';
 		return;
 	}
 
-	const findExistingIndex =  painting?.value?.images.findIndex((el) => el.preview);
-	if (findExistingIndex && findExistingIndex > -1 && painting?.value?.images[findExistingIndex]) {
-		painting.value.images[findExistingIndex].preview = false;
-		return;
+	if (painting.value) {
+		const findExistingIndex =  painting.value.images.findIndex((el) => el.preview);
+		if (findExistingIndex > -1 && painting.value.images[findExistingIndex]) {
+			painting.value.images[findExistingIndex].preview = false;
+			return;
+		}
 	}
 
 	if (isNew) {
@@ -106,7 +113,7 @@ const cancelEdit = async () => {
 	newImagesPreviews.value = [];
 	newImagesMetadata.value = [];
 	newImages.value = [];
-	painting.value = originalPainting.value;
+	painting.value = cloneDeep(originalPainting.value);
 };
 
 const save = async () => {
@@ -114,24 +121,23 @@ const save = async () => {
 	const valid = await paintingForm.value.validate();
 	if (!valid) return;
 
-	isSaving.value = 1;
 	await userStore.authRouteAccess();
 	const token = userStore.getUser?.token;
 	if (!token || !painting.value || !originalPainting.value) {
 		return;
 	}
+	isSaving.value = 1;
 
 	const existingImagesChanged: Array<{oldIndex: number, newIndex: number}> = [];
 	const existingImagesRemoved: string[] = [];
-	let paintingChanged = false;
 	let tempSaveSteps = 0;
 
 	if (!isEqual(painting.value, originalPainting.value)) {
-		paintingChanged = true;
+		tempSaveSteps += 1;
 		for (let i = 0, length = originalPainting.value.images.length; i < length; i++) {
 			const originalImage = originalPainting.value.images[i];
 			const updatedImageIndex = painting.value.images.findIndex((el) => el.id === originalImage.id);
-			if (updatedImageIndex && updatedImageIndex > -1) {
+			if (updatedImageIndex > -1) {
 				if (!isEqual(painting.value.images[updatedImageIndex], originalImage)) {
 					existingImagesChanged.push({oldIndex: i, newIndex: updatedImageIndex});
 				}
@@ -139,7 +145,7 @@ const save = async () => {
 				existingImagesRemoved.push(originalImage.id);
 			}
 		}
-		tempSaveSteps += (1 + existingImagesChanged.length + existingImagesRemoved.length);
+		tempSaveSteps += (existingImagesChanged.length + existingImagesRemoved.length);
 	}
 
 	if (newImages.value.length) {
@@ -147,7 +153,7 @@ const save = async () => {
 	}
 
 	saveSteps.value = tempSaveSteps;
-	const stepValue = Math.ceil(100 / tempSaveSteps);
+	const stepValue = (saveSteps.value) ? Math.ceil(100 / saveSteps.value) : 100;
 
 	const saveHandler = new PaintingSave(token);
 	saveHandler.addEventListener('saveProgress', () => {
@@ -159,9 +165,9 @@ const save = async () => {
 	});
 
 	try {
-		if (paintingChanged) {
+		if (!isEqual(painting.value, originalPainting.value)) {
 			await saveHandler.updatePainting(painting.value, originalPainting.value);
-			for (let i = 0, length = existingImagesRemoved.length; i < length; i++) {
+			for (let i = 0, length = existingImagesChanged.length; i < length; i++) {
 				await saveHandler.updateImage(
 					originalPainting.value.images[existingImagesChanged[i].oldIndex],
 					painting.value.images[existingImagesChanged[i].newIndex]
@@ -179,15 +185,28 @@ const save = async () => {
 			);
 		}
 	} catch (error) {
+		console.error(error);
 		saveHandler.removeEventListener('saveProgress', null);
+		isSaving.value = 0;
 		return;
 	}
 
+	saveProgress.value = 100;
 	saveHandler.removeEventListener('saveProgress', null);
-	savingDialogText.value = 'Uloženo';
 	isSaving.value = 2;
 	edit.value = false;
 };
+
+const removePainting = async () => {
+	await userStore.authRouteAccess();
+	const token = userStore.getUser?.token;
+	if (!token || !painting.value?.painting.id) {
+		return;
+	}
+	await ApiSDK?.removePainting(painting.value.painting.id, token);
+	await router.push({name: routesOpts.P_LIST});
+}
+
 const openDetail = () => {
 	location.reload();
 };
@@ -208,6 +227,7 @@ onMounted(async () => {
 			variant="elevated"
 			color="error"
 			style="margin-left: 8px"
+			@click.stop="removePainting"
 		>Odstranit</v-btn>
 		<v-btn
 			v-if="!edit"
@@ -282,6 +302,7 @@ onMounted(async () => {
 								:edit="edit"
 								@modelUpdate="handleExistingFilesChange($event, pIndex)"
 								@preview-select="handlePreviewChange(pIndex, false)"
+								@remove-painting-image="handleRemovePaintingImage(pIndex, false)"
 							/>
 						</div>
 					</v-col>
@@ -325,6 +346,7 @@ onMounted(async () => {
 								:edit="edit"
 								@modelUpdate="handleNewFilesChange($event, mIndex)"
 								@preview-select="handlePreviewChange(mIndex, true)"
+								@remove-painting-image="handleRemovePaintingImage(mIndex, true)"
 							/>
 						</div>
 					</v-col>
@@ -333,28 +355,9 @@ onMounted(async () => {
 		</v-card>
 	</v-form>
 
-	<dialog v-if="isSaving" id="savingDialog" class="elevation-7">
-		<div style="width: 100%">
-			<h2 style="text-align: center">{{ savingDialogText }}</h2>
-		</div>
-		<div style="width: 100%; display: flex; align-items: center; margin-top: 20px">
-			<v-progress-linear
-				color="amber"
-				height="50"
-				v-model="saveProgress"
-			>
-				<strong>{{ Math.ceil(saveProgress) }}%</strong>
-			</v-progress-linear>
-		</div>
-		<v-btn
-			v-if="isSaving === 2"
-			variant="elevated"
-			size="large"
-			color="success"
-			style="margin-top: 20px"
-			@click.stop="openDetail"
-		>
-			OK
-		</v-btn>
-	</dialog>
+	<SavingDialog
+		:is-saving="isSaving"
+		:save-progress="saveProgress"
+		:cb="openDetail"
+	/>
 </template>

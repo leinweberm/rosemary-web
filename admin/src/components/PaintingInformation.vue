@@ -14,9 +14,9 @@ const props = defineProps<{
 	edit: boolean,
 }>();
 
-const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, value: number) => {
+const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, value: string) => {
 	emits('modelUpdate', {key, value});
-}, 200);
+}, 1000);
 </script>
 
 <template>
@@ -38,7 +38,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, v
 		<v-row>
 			<v-col>
 				<v-text-field
-					v-model="props.price"
+					:model-value="props.price"
 					label="cena"
 					type="number"
 					min="0"
@@ -46,7 +46,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, v
 					:readonly="!props.edit"
 					variant="outlined"
 					:bg-color="(props.edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('price', parseInt($event))"
+					@update:modelValue="debouncedModelUpdate('price', $event)"
 				></v-text-field>
 				<v-text-field
 					:model-value="props.height"
@@ -57,7 +57,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, v
 					:readonly="!edit"
 					variant="outlined"
 					:bg-color="(edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('height', parseInt($event))"
+					@update:modelValue="debouncedModelUpdate('height', $event)"
 				></v-text-field>
 				<v-text-field
 					:model-value="props.width"
@@ -68,7 +68,7 @@ const debouncedModelUpdate = useDebounceFn((key: TEventPaintingInformationKey, v
 					:readonly="!edit"
 					variant="outlined"
 					:bg-color="(edit) ? 'grey-lighten-3' : 'transparent'"
-					@update:modelValue="debouncedModelUpdate('width', parseInt($event))"
+					@update:modelValue="debouncedModelUpdate('width', $event)"
 				></v-text-field>
 			</v-col>
 		</v-row>
