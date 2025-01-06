@@ -44,7 +44,7 @@ const prepareNavbarPosition = () => {
 			isNavBig = true;
 		}
 		lastScroll = scroll;
-	}, 200));
+	}, 100));
 };
 
 const addEventListeners = () => {

@@ -1,0 +1,85 @@
+.galleryBody {
+	width: 90%;
+	max-width: 1600px;
+	margin: auto;
+	padding: 80px 20px 20px 20px;
+}
+
+.galleryFilters, .galleryItems, .galleryFiltersWrapper, .galleryFiltersHeaders, .galleryFiltersBody {
+	width: 100%;
+}
+
+.galleryFiltersWrapper {
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+.galleryFiltersHeaders {
+	padding: 10px 20px;
+	border-bottom:  1px solid silver;
+	justify-content: space-between;
+}
+
+.galleryFilters, .galleryItems {
+	min-height: 50px;
+	flex-wrap: wrap;
+	overflow-y: auto;
+	overflow-x: hidden;
+	margin: 10px 0;
+}
+
+.galleryItems {
+	margin: 25px 0;
+}
+
+.galleryFilters {
+	justify-content: space-around;
+}
+
+.galleryItem {
+	width: 250px;
+	margin: 10px 15px;
+	cursor: pointer;
+}
+
+.galleryItem > b, .galleryItem > p {
+	font-size: 1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	width: 100%;
+	text-align: center;
+	text-overflow: ellipsis;
+	margin: 2px;
+}
+
+.galleryItemImageSlot {
+	width: 250px;
+	height: 250px;
+	overflow: hidden;
+	object-fit: contain;
+	margin: 10px 0 20px 0;
+}
+
+.galleryItemImageSlot > img {
+	object-fit: contain;
+	max-width: 250px;
+	max-height: 250px;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+}
+
+input:is(.filterInput), select:is(.filterInput) {
+	width: 30%;
+}
+
+@media screen and (max-width: 720px) {
+	.galleryBody {
+		width: 100%;
+		height: auto;
+	}
+}
+
+@media screen and (max-width: 800px) {
+	input:is(.filterInput), select:is(.filterInput) {
+		font-size: 1.25rem;
+		width: 100%;
+	}
+}

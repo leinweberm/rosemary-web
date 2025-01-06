@@ -30,7 +30,7 @@ nav {
 		top var(--nav-animation-slower) ease,
 		width var(--nav-animation-slower) ease,
 		background-color var(--nav-animation-slower) ease;
-	top: 15px;
+	top: 5px;
 	width: 100%;
 	z-index: 6;
 
@@ -41,7 +41,7 @@ nav {
 
 #navBackground {
 	background: black;
-	height: 80px;
+	height: 60px;
 	transition: height 0.5s ease;
 	top: 0;
 	width: 100%;

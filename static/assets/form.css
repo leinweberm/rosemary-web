@@ -1,0 +1,30 @@
+button {
+	font-size: 1.25rem;
+	padding: 5px 10px;
+	margin: 10px;
+	cursor: pointer;
+	border: none;
+	outline: none;
+	background: transparent;
+	text-transform: uppercase;
+	color: gray;
+	transition: color 0.25s ease-in-out;
+}
+
+button:hover {
+	color: black;
+}
+
+input:is(.form), select:is(.form) {
+	width: 250px;
+	font-size: 1rem;
+	padding: 10px;
+	margin: 10px;
+}
+
+@media screen and (max-width: 720px) {
+	input:is(.form), select:is(.form) {
+		font-size: 1.25rem;
+		width: 100%;
+	}
+}

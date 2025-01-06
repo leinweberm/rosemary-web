@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Rosemary</title>
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap"
+		rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&amp;display=swap"
+		rel="stylesheet">
+	<link defer rel="stylesheet" href="http://static.localhost/assets/main.css">
+	<link rel="stylesheet" href="http://static.localhost/assets/form.css">
+	<link rel="stylesheet" href="http://static.localhost/assets/navbar.css">
+	<link rel="stylesheet" href="http://static.localhost/assets/gallery.css">
+	<script defer src="http://static.localhost/assets/main.js"></script>
+	<script defer src="http://static.localhost/assets/gallery.js"></script>
+</head>
+
+<body>
+	<nav id="nav" class="frcc">
+		<div id="navBackground" class="frcc"></div>
+		<div id="navDecorativeLine"></div>
+		<div id="navDesktopLinks" class="frss">
+			<a href="/">HOME</a>
+			<a href="/gallery">GALLERY</a>
+			<a href="/photo">PHOTO</a>
+			<a href="/blog">BLOG</a>
+			<a href="/contact">CONTACT</a>
+		</div>
+		<label for="navToggleCheckbox"></label><input type="checkbox" id="navToggleCheckbox" autocomplete="off" />
+		<div id="navTogglePseudo">
+			<svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 -960 960 960" width="40px" fill="white">
+				<path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z" />
+			</svg>
+		</div>
+		<ul id="navToggleMenu" class="fccc">
+			<li class="frcc"><a href="/">HOME</a></li>
+			<li class="frcc"><a href="/gallery">GALLERY</a></li>
+			<li class="frcc"><a href="/photo">PHOTO</a></li>
+			<li class="frcc"><a href="/blog">BLOG</a></li>
+			<li class="frcc"><a href="/contact">CONTACT</a></li>
+		</ul>
+	</nav>
+
+	<!-- CONTENT START -->
+	<div class="content fcss">
+		<div class="contentContainer">
+			<div class="fccs galleryBody">
+				<div class="fccc galleryFiltersWrapper" style="margin-bottom: 20px;">
+					<div class="frcs galleryFiltersHeaders">
+						<p style="font-size: 1rem; margin: 2px">filters</p>
+						<p>collapse</p>
+					</div>
+					<div class="fccc galleryFiltersBody">
+						<div class="frss galleryFilters">
+							<select class="form filterInput" name="sort">
+								<option value="created">created</option>
+								<option value="price">price</option>
+								<option value="width">width</option>
+								<option value="height">height</option>
+								<option value="title">title</option>
+								<option value="sold">sold</option>
+							</select>
+							<select class="form filterInput" name="order">
+								<option value="asc">ascending</option>
+								<option value="desc">descending</option>
+							</select>
+							<input type="text" placeholder="search" class="form filterInput" name="search" />
+						</div>
+						<div class="frcc" style="width: 100%;">
+							<button id="confirmFilters">confirm</button>
+							<button id="resetFilters">reset</button>
+						</div>
+					</div>
+				</div>
+				<div class="frcc galleryItems">
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://static.wikia.nocookie.net/k-hip-hop/images/8/82/I.m_1.png/revision/latest?cb=20210622191125" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE WITH LONG TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTetz6iWo5PbsqpP7XeaozRd5do1W-FKvxwd34ZRwOAIpNl7HbvwRytYy78hGlNR7AYpj0&usqp=CAU" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://static.wikia.nocookie.net/k-hip-hop/images/8/82/I.m_1.png/revision/latest?cb=20210622191125" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE WITH LONG TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTetz6iWo5PbsqpP7XeaozRd5do1W-FKvxwd34ZRwOAIpNl7HbvwRytYy78hGlNR7AYpj0&usqp=CAU" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://static.wikia.nocookie.net/k-hip-hop/images/8/82/I.m_1.png/revision/latest?cb=20210622191125" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE WITH LONG TITLE</b>
+						<div class="fccc galleryItemImageSlot">
+							<img
+								src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTetz6iWo5PbsqpP7XeaozRd5do1W-FKvxwd34ZRwOAIpNl7HbvwRytYy78hGlNR7AYpj0&usqp=CAU" />
+						</div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+					<div class="fccs galleryItem">
+						<b>PAINTING TITLE</b>
+						<div class="galleryItemImageSlot"></div>
+						<p>100cm x 70cm
+						<p>
+						<p>15 000$</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- FOOTER START -->
+	<footer id="footer">
+		<section>
+			<div>
+				<span>
+					<b>CONTACT</b>
+					<p>rosemaryphotography@seznam.cz</p>
+					<a href="https://www.instagram.com/rozmarynamaluje/">
+						instagram
+					</a>
+					<a href="https://www.facebook.com/p/Rozmar%C3%BDna-maluje-100077482535221/">
+						facebook
+					</a>
+				</span>
+			</div>
+			<div>
+				<span>
+					<b>FAQ</b>
+					<a href="/upcomin-events">upcoming events</a>
+					<a href="/photo-pricing">photo pricing</a>
+					<a href="/photo-reservation">photo reservation</a>
+				</span>
+			</div>
+			<div>
+				<span>
+					<b>NAVIGATION</b>
+					<a href="/">home page</a>
+					<a href="/gallery">paintings</a>
+					<a href="/photo">photo</a>
+					<a href="/blog">contact</a>
+					<a href="/contanct">contact</a>
+				</span>
+			</div>
+			<section>
+	</footer>
+</body>
+
+</html>
