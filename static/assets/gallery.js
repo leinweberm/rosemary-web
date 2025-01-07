@@ -1,5 +1,5 @@
+const pagePath = 'gallery.html';
 const dirty = false;
-
 const getDefaultQuery = () => {
 	return {
 		sort: 'created',
@@ -8,12 +8,10 @@ const getDefaultQuery = () => {
 		offset: '0',
 	};
 };
-
 let filters = new URLSearchParams(getDefaultQuery());
 
 const parseUrlQuery = () => {
 	const params = new URLSearchParams(document.location.search);
-
 	const sort = params.get('sort');
 	const order = params.get('order');
 	const limit = parseInt(params.get('limit'));
@@ -38,18 +36,48 @@ const parseUrlQuery = () => {
 };
 
 const redirectWithFilters = () => {
-	window.location.href = `/gallery?${filters.toString()}`;
+	window.location.href = `/${pagePath}?${filters.toString()}`;
 }
-
-const updateBrowserUrl = () => {
-	history.replaceState({filters}, 'Rosemary', `/gallery?${filters.toString()}`);
-};
 
 const resetFilters = () => {
 	filters = new URLSearchParams(getDefaultQuery());
 	redirectWithFilters();
-}
+};
+
+const handleFilterEvent = (event) => {
+	event.stopPropagation();
+	filters.set(event.target.name, event.target.value);
+	redirectWithFilters();
+};
+
+const addInputEventListeners = () => {
+	const sortInput = document.querySelector('.galleryFilters > select:nth-child(1)');
+	if (sortInput) {
+		sortInput.addEventListener('change', event => handleFilterEvent(event));
+		sortInput.value = filters.get('sort');
+	}
+
+	const orderInput = document.querySelector('.galleryFilters > select:nth-child(2)');
+	if (orderInput) {
+		orderInput.addEventListener('change', event => handleFilterEvent(event));
+		orderInput.value = filters.get('order');
+	}
+
+	const searchInput = document.querySelector('.galleryFilters > input');
+	if (searchInput) {
+		searchInput.addEventListener(
+			'input',
+			window.utils.debounce((event) => {handleFilterEvent(event)}, 300)
+		);
+		searchInput.value = filters.get('search') || '';
+	}
+};
+
+const onLoad = () => {
+	parseUrlQuery();
+	addInputEventListeners();
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-
+	onLoad();
 });

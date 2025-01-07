@@ -5,21 +5,19 @@
 	padding: 80px 20px 20px 20px;
 }
 
-.galleryFilters, .galleryItems, .galleryFiltersWrapper, .galleryFiltersHeaders, .galleryFiltersBody {
+.galleryFilters,
+.galleryItems,
+.galleryFiltersWrapper,
+.galleryFiltersBody {
 	width: 100%;
 }
 
 .galleryFiltersWrapper {
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+	border-bottom: 1px solid silver;
 }
 
-.galleryFiltersHeaders {
-	padding: 10px 20px;
-	border-bottom:  1px solid silver;
-	justify-content: space-between;
-}
-
-.galleryFilters, .galleryItems {
+.galleryFilters,
+.galleryItems {
 	min-height: 50px;
 	flex-wrap: wrap;
 	overflow-y: auto;
@@ -39,9 +37,13 @@
 	width: 250px;
 	margin: 10px 15px;
 	cursor: pointer;
+	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+	padding: 10px;
+	margin-bottom: 40px;
 }
 
-.galleryItem > b, .galleryItem > p {
+.galleryItem>b,
+.galleryItem>p {
 	font-size: 1rem;
 	white-space: nowrap;
 	overflow: hidden;
@@ -52,21 +54,34 @@
 }
 
 .galleryItemImageSlot {
-	width: 250px;
-	height: 250px;
+	width: 230px;
+	height: 230px;
 	overflow: hidden;
 	object-fit: contain;
 	margin: 10px 0 20px 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: rgba(1, 1, 1, 0.05);
 }
 
-.galleryItemImageSlot > img {
+.galleryItemImageSlot>img {
 	object-fit: contain;
-	max-width: 250px;
-	max-height: 250px;
-	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
+	max-width: 230px;
+	max-height: 230px;
 }
 
-input:is(.filterInput), select:is(.filterInput) {
+.galleryPagination {
+	width: 100%;
+	border-top: 1px solid silver;
+	height: 60px;
+	margin: 40px 0;
+	justify-content: space-between;
+}
+
+input:is(.filterInput),
+select:is(.filterInput) {
 	width: 30%;
 }
 
@@ -78,7 +93,9 @@ input:is(.filterInput), select:is(.filterInput) {
 }
 
 @media screen and (max-width: 800px) {
-	input:is(.filterInput), select:is(.filterInput) {
+
+	input:is(.filterInput),
+	select:is(.filterInput) {
 		font-size: 1.25rem;
 		width: 100%;
 	}
