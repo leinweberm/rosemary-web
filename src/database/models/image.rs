@@ -24,6 +24,7 @@ pub struct PaintingImageUpdate {
 	pub title_cs: Option<String>,
 	pub title_en: Option<String>,
 	pub status: Option<String>,
+	pub preview: Option<bool>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -33,7 +34,7 @@ pub struct PaintingImage {
 	pub alt: Option<Translation>,
 	pub title: Option<Translation>,
 	pub painting_id: Uuid,
-	pub status: String,
+	pub status: Option<String>,
 	pub file_location: Option<String>,
 	pub urls: Vec<String>
 }
@@ -87,50 +88,56 @@ impl PaintingImage {
 		)
 	}
 
-	// pub fn update_query(data: PaintingImageUpdate, id: Uuid) -> String {
-	// 	let mut values: Vec<String> = Vec::new();
-	// 	let mut query = String::from("UPDATE rosemary.painting_images SET ");
-	//
-	// 	if let Some(new_status) = data.status {
-	// 		values.push(format!("status = '{}'", new_status));
-	// 	};
-	//
-	// 	if let (Some(cs), Some(en)) = (data.alt_cs.as_ref(), data.alt_en.as_ref()) {
-	// 		values.push(format!(
-	// 			"alt = JSONB_SET(JSONB_SET(alt::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
-	// 			cs,
-	// 			en
-	// 		));
-	// 	} else if let Some(cs) = data.alt_cs {
-	// 		values.push(format!(
-	// 			"alt = JSONB_SET(alt::jsonb, '{{cs}}', '\"{}\"')", cs
-	// 		));
-	// 	} else if let Some(en) = data.alt_en {
-	// 		values.push(format!(
-	// 			"alt = JSONB_SET(alt::jsonb, '{{en}}', '\"{}\"')", en
-	// 		));
-	// 	};
-	//
-	// 	if let (Some(cs), Some(en)) = (data.title_cs.as_ref(), data.title_en.as_ref()) {
-	// 		values.push(format!(
-	// 			"title = JSONB_SET(JSONB_SET(title::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
-	// 			cs,
-	// 			en
-	// 		));
-	// 	} else if let Some(cs) = data.title_cs {
-	// 		values.push(format!(
-	// 			"title = JSONB_SET(title::jsonb, '{{cs}}', '\"{}\"')", cs
-	// 		));
-	// 	} else if let Some(en) = data.title_en {
-	// 		values.push(format!(
-	// 			"title = JSONB_SET(title::jsonb, '{{en}}', '\"{}\"')", en
-	// 		));
-	// 	}
-	//
-	// 	query.push_str(&values.join(", "));
-	// 	query.push_str(&format!(" WHERE id = '{}' AND deleted IS NULL RETURNING *;", id));
-	// 	query
-	// }
+	pub fn update_query(data: PaintingImageUpdate, id: Uuid) -> String {
+		let mut values: Vec<String> = Vec::new();
+		let mut query = String::from("UPDATE rosemary.painting_images SET ");
+
+		if let Some(new_status) = data.status {
+			values.push(format!("status = '{}'", new_status));
+		};
+
+		debug!(target: "db", "preview {:?}", &data.preview);
+		if let Some(preview) = data.preview {
+			debug!(target: "db", "preview update {}", &preview);
+			values.push(format!("preview = {}", preview))
+		};
+
+		if let (Some(cs), Some(en)) = (data.alt_cs.as_ref(), data.alt_en.as_ref()) {
+			values.push(format!(
+				"alt = JSONB_SET(JSONB_SET(alt::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
+				cs,
+				en
+			));
+		} else if let Some(cs) = data.alt_cs {
+			values.push(format!(
+				"alt = JSONB_SET(alt::jsonb, '{{cs}}', '\"{}\"')", cs
+			));
+		} else if let Some(en) = data.alt_en {
+			values.push(format!(
+				"alt = JSONB_SET(alt::jsonb, '{{en}}', '\"{}\"')", en
+			));
+		};
+
+		if let (Some(cs), Some(en)) = (data.title_cs.as_ref(), data.title_en.as_ref()) {
+			values.push(format!(
+				"title = JSONB_SET(JSONB_SET(title::jsonb, '{{cs}}', '\"{}\"', true), '{{en}}', '\"{}\"', true)",
+				cs,
+				en
+			));
+		} else if let Some(cs) = data.title_cs {
+			values.push(format!(
+				"title = JSONB_SET(title::jsonb, '{{cs}}', '\"{}\"')", cs
+			));
+		} else if let Some(en) = data.title_en {
+			values.push(format!(
+				"title = JSONB_SET(title::jsonb, '{{en}}', '\"{}\"')", en
+			));
+		}
+
+		query.push_str(&values.join(", "));
+		query.push_str(&format!(" WHERE id = '{}' RETURNING *;", id));
+		query
+	}
 
 	pub fn update_resized_query(id: Uuid, location: String, urls: Vec<String>) -> String {
 		format!(

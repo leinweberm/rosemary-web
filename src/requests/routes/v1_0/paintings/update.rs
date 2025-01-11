@@ -52,5 +52,4 @@ pub fn update() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 		.and_then(|painting_uid: Uuid, data: PaintingUpdate, _claims: Claims| async move {
 			update_painting(painting_uid, data).await
 		})
-		.with(warp::log("api"))
 }

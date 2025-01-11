@@ -37,5 +37,4 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 		.and_then(|id: Uuid| async move {
 			get_painting_images(id).await
 		})
-		.with(warp::log("api"))
 }

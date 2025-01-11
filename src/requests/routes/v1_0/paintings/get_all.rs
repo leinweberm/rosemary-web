@@ -60,5 +60,4 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 		.and(path::end())
 		.and(query::<GetPaintingsQuery>())
 		.and_then(get_paintings)
-		.with(warp::log("api"))
 }

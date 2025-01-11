@@ -1,0 +1,149 @@
+#navDesktopLinks, #navBackground, #navDecorativeLine, #navToggleCheckbox, #navTogglePseudo,
+#navToggleMenu { position: absolute; }
+
+/* ===== DESKTOP ===== */
+nav {
+	border-bottom: 1px solid var(--title-color);
+	container: navbar / inline-size;
+	font-family: "Sans Serif", serif;
+	height: 0;
+	position: fixed;
+	transition:
+		height var(--nav-animation-faster) ease,
+		top var(--nav-animation-faster) ease;
+	top: 0;
+	width: 100%;
+	z-index: 5;
+}
+
+#nav {
+	@container navbar (max-width: 720px) {
+		height: var(--nav-mobile-height);
+	}
+}
+
+#navDesktopLinks {
+	height: 50px;
+	justify-content: space-around;
+	padding: 10px;
+	transition:
+		top var(--nav-animation-slower) ease,
+		width var(--nav-animation-slower) ease,
+		background-color var(--nav-animation-slower) ease;
+	top: 5px;
+	width: 100%;
+	z-index: 6;
+
+	@container navbar (max-width: 720px) {
+		display: none;
+	}
+}
+
+#navBackground {
+	background: black;
+	height: 60px;
+	transition: height 0.5s ease;
+	top: 0;
+	width: 100%;
+	z-index: 0;
+
+	@container navbar (max-width: 720px) {
+		height: var(--nav-mobile-height);
+	}
+}
+
+#navDecorativeLine {
+	height: 0;
+	z-index: 1;
+	width: 100%;
+	top: 0;
+	border-bottom: 1px solid var(--title-color);
+	transition: height 0.5s ease;
+
+	@container navbar (max-width: 720px) {
+		display: none;
+	}
+}
+
+/* ===== MOBILE ===== */
+#navToggleCheckbox {
+	height: var(--nav-small-height);
+	width: var(--nav-small-height);
+	right: var(--nav-hamburger-position);
+	opacity: 0;
+	cursor: pointer;
+	z-index: 5;
+
+	@container navbar (min-width: 720px) {
+		display: none;
+	}
+}
+
+#navToggleCheckbox:checked~#navToggleMenu {
+	transform: translateX(0);
+}
+
+#navTogglePseudo {
+	right: var(--nav-hamburger-position);
+
+	@container navbar (min-width: 720px) {
+		display: none;
+	}
+}
+
+#navToggleMenu {
+	transform: translateX(+110%);
+	transition: transform var(--nav-animation-faster) ease-out;
+	z-index: 5;
+	top: var(--nav-mobile-height);
+	background-color: black;
+	height: calc(100dvh - var(--nav-mobile-height));
+	width: 100%;
+	font-size: 2rem;
+	box-shadow: rgba(0, 0, 0, 0.45) -20px 0px 20px -20px;
+	justify-content: space-around;
+}
+
+/* GENERAL & SCOPES */
+@scope (#navDesktopLinks) {
+	a {
+		color: var(--title-color);
+		font-size: 1.5rem;
+		margin: 0 20px;
+	}
+}
+
+@scope (#navToggleMenu) {
+	li { height: 1fr; }
+	a { color: var(--title-color); }
+}
+
+@media screen and (max-width: 720px) {
+	#nav { height: var(--nav-mobile-height); }
+	.navSmall { top: calc(-1 * var(--nav-mobile-height)); }
+}
+
+@media screen and (min-width: 720px) {
+	.navSmall, .navSmall > #navBackground, .navSmall > #navDecorativeLine {
+		height: var(--nav-small-height);
+	}
+	.navSmall > #navDesktopLinks {
+		top: 0;
+		width: 500px;
+		justify-content: center;
+	}
+	.navSmall > #navDesktopLinks > a {
+		transition: font-size var(--nav-animation-slower) ease;
+		font-size: 1rem;
+	}
+}
+
+body {
+	height: unset;
+	overflow: unset;
+}
+
+body:has(#navToggleCheckbox:checked) {
+	height: 100dvh;
+	overflow: hidden;
+}

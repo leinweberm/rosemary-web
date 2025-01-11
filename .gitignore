@@ -1,6 +1,10 @@
 /target
-/static
+/static/admin
+/static/images
 /certs/*
 src/certs/*
 .env
 .env.prod
+/admin/node_modules
+/admin/.idea
+/admin/dist
