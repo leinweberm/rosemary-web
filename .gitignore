@@ -8,3 +8,4 @@ src/certs/*
 /admin/node_modules
 /admin/.idea
 /admin/dist
+/development/nginx/*.log
