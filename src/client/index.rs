@@ -1,5 +1,5 @@
-use askama::Template;
-
-#[derive(Template)]
-#[template(path = "./index.html")]
-pub struct Page {}
+// use askama::Template;
+//
+// #[derive(Template)]
+// #[template(path = "./index.html")]
+// pub struct Page {}

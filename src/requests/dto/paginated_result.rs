@@ -6,7 +6,7 @@ pub struct PaginatedResult<T> {
     pub count: i64,
 }
 
-impl <T> PaginatedResult<T> {
+impl<T> PaginatedResult<T> {
     pub fn new() -> Self {
         PaginatedResult {
             rows: vec![],

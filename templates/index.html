@@ -2,36 +2,32 @@
 <html lang="en">
 
 <head>
-		{% include "./components/head.html" %}
+	{% include "./components/head.html" %}
 </head>
 
 <body>
-		{% include "./components/navbar.html" %}
-
+	{% include "./components/navbar.html" %}
 	<div class="content fcss">
 		<div class="fccs contentContainer index">
 			<img
 				id="heroBanner"
-				src="http://static.localhost/images/herobaner_1920.jpeg"
-				alt="rosemary artist hero landing page banner"
+				src="{{ page.hero_banner }}"
+				alt="{{ page.hero_banner_alt }}"
 			/>
-			<h1>Rosemary</h1>
+		<h1>{{ page.title }}</h1>
 		</div>
 		<div class="fccc contentContainer" style="background: white;">
 			<div class="fccc contentBody">
 				<img
 					id="authorHomePicture"
-					src="http://static.localhost/images/author_home.jpeg"
-					alt="author home page profile picture"
+					src="{{ page.author_picture }}"
+					alt="{{ page.author_picture_alt }}"
 				>
-				<p class="P">
-					Through working&nbsp;in a&nbsp;bank, visiting monks in&nbsp;the&nbsp;Himalayas of&nbsp;Nepal, experiencing multiple personal rises and falls to&nbsp;finally finding a&nbsp;comfort in&nbsp;expressing my feelings and&nbsp;emotions on&nbsp;canvas or&nbsp;through photography. Passing control of&nbsp;my&nbsp;hands to&nbsp;whatever lies deep down within my&nbsp;subconsciousness, letting it flow freely in&nbsp;harmony with the tunes of&nbsp;my&nbsp;favorite music. It&nbsp;is&nbsp;not portrait, it&nbsp;is&nbsp;not landscape either, though people may see various things in&nbsp;it, but most importantly, it&nbsp;is&nbsp;me.
-				</p>
+				<p class="P">{{ page.author_description }}</p>
 			</div>
 		</div>
 	</div>
 	{% include "./components/footer.html" %}
-
 </body>
 
 </html>

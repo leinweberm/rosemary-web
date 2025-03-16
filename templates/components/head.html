@@ -1,18 +1,34 @@
 <meta charset="UTF-8">
-<meta
-	name="viewport"
-	content="width=device-width, initial-scale=1.0"
->
-<title>Rosemary</title>
-<link
-	rel="preconnect"
-	href="https://fonts.gstatic.com"
-	crossorigin=""
->
-<link
-	rel="preconnect"
-	href="https://fonts.googleapis.com"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="{{ meta.description }}">
+<meta name="keywords" content="{{ meta.keywords }}">
+<meta name="author" content="{{ meta.author }}">
+<meta name="robots" content="{{ meta.robots }}">
+
+<title>{{ page.title }}</title>
+<link rel="canonical" href="{{ meta.url }}">
+
+<!-- Open Graph (Facebook, LinkedIn) -->
+<meta property="og:title" content="{{ page.title }}">
+<meta property="og:description" content="{{ meta.description }}">
+<meta property="og:image" content="{{ meta.image }}">
+<meta property="og:url" content="{{ meta.url }}">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="{{ meta.locale }}">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="{{ meta.summary_large_image }}">
+<meta name="twitter:title" content="{{ page.title }}">
+<meta name="twitter:description" content="{{ meta.description }}">
+<meta name="twitter:image" content="{{ meta.image }}">
+<meta name="twitter:site" content="{{ meta.twitter_handle }}">
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="{{ meta.favicon }}">
+
+<!--  Links & Scripts -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link
 	href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap"
 	rel="stylesheet"
@@ -21,12 +37,6 @@
 	href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&amp;display=swap"
 	rel="stylesheet"
 >
-<link
-	rel="stylesheet"
-	href="http://static.localhost/assets/main.css"
->
-<link
-	rel="stylesheet"
-	href="http://static.localhost/assets/navbar.css"
->
+<link rel="stylesheet" href="http://static.localhost/assets/main.css">
+<link rel="stylesheet" href="http://static.localhost/assets/navbar.css">
 <script src="http://static.localhost/assets/main.js"></script>
