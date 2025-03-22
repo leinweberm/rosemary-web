@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-	{{% include "./components/head.html" %}}
+	{% include "./components/head.html" %}
 	<link rel="stylesheet" href="http://static.localhost/assets/form.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/gallery.css">
 	<script type="module" src="http://static.localhost/assets/utils.js"></script>
@@ -10,7 +10,7 @@
 </head>
 
 <body>
-	{{% include "./components/navbar.html" %}}
+	{% include "./components/navbar.html" %}
 
 	<!-- CONTENT START -->
 	<div class="content fcss">
@@ -27,22 +27,22 @@
 								name="sort"
 							>
 								<option value="created">
-									{{ page.translations.created }}
+									{{ page.created }}
 								</option>
 								<option value="price">
-									{{ page.translations.price }}
+									{{ page.price }}
 								</option>
 								<option value="width">
-									{{ page.translations.width }}
+									{{ page.width }}
 								</option>
 								<option value="height">
-									{{ page.translations.height }}
+									{{ page.height }}
 								</option>
 								<option value="title">
-									{{ page.translations.title }}
+									{{ page.title }}
 								</option>
 								<option value="sold">
-									{{ page.translations.sold }}
+									{{ page.sold }}
 								</option>
 							</select>
 							<select
@@ -50,10 +50,10 @@
 								name="order"
 							>
 								<option value="asc">
-									{{ page.translations.ascending }}
+									{{ page.ascending }}
 								</option>
 								<option value="desc">
-									{{ page.translations.descending }}
+									{{ page.descending }}
 								</option>
 							</select>
 							<input
@@ -66,8 +66,9 @@
 					</div>
 				</div>
 				<div class="frcc galleryItems">
-					{{% for itemStub in page.galleryItemStubs %}}
-					{{% end for %}}
+					{% for gallery_item_stub in page.gallery_item_stubs %}
+						{% include "./components/gallery/galleryItem.html" %}
+					{% endfor %}
 				</div>
 				<div class="frcc galleryPagination">
 					<p style="margin-left: 20px;">0-25 / 356</p>
@@ -96,7 +97,7 @@
 		</div>
 	</div>
 	<!-- FOOTER START -->
-	{{% include "./components/footer.html" %}}
+	{% include "./components/footer.html" %}
 </body>
 
 </html>

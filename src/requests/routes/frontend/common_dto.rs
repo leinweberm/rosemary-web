@@ -1,12 +1,12 @@
-pub struct MetaProps {
-    pub description: String,
-    pub keywords: String,
-    pub author: String,
-    pub robots: String,
-    pub image: String,
-    pub locale: String,
-    pub favicon: String,
-    pub summary_large_image: String,
-    pub twitter_handle: String,
-    pub url: String,
+pub struct MetaProps<'a> {
+    pub description: &'a str,
+    pub keywords: &'a str,
+    pub author: &'a str,
+    pub robots: &'a str,
+    pub image: &'a str,
+    pub locale: &'a str,
+    pub favicon: &'a str,
+    pub summary_large_image: &'a str,
+    pub twitter_handle: &'a str,
+    pub url: &'a str,
 }
