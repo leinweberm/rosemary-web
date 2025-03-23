@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use sql_query_builder as sql;
 use sqlx::postgres::PgRow;
 use sqlx::prelude::FromRow;
 use sqlx::types::{Json, JsonValue};
@@ -9,8 +10,35 @@ use std::collections::HashMap;
 use uuid::Uuid;
 use warp::Reply;
 
+use crate::client::translations::Language;
 use crate::database::models::generics::{deserialize_json_string, Translation};
 use crate::database::models::image::PaintingImage;
+use crate::requests::dto::get_paintings_query::GetPaintingsQuery;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct PaintingStub {
+    pub id: Uuid,
+    pub created: DateTime<Utc>,
+    pub price: i64,
+    pub size: String,
+    pub title: String,
+    pub preview_alt: String,
+    pub preview: String,
+}
+
+impl<'r> FromRow<'r, PgRow> for PaintingStub {
+    fn from_row(row: &'r PgRow) -> Result<Self, sqlx::Error> {
+        Ok(Self {
+            id: row.try_get("id")?,
+            created: row.try_get("created")?,
+            price: row.try_get("price")?,
+            size: row.try_get("size")?,
+            title: row.try_get("title")?,
+            preview_alt: row.try_get("preview_alt")?,
+            preview: row.try_get("preview")?,
+        })
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PaintingBase {
@@ -101,6 +129,65 @@ pub struct Painting {
     pub preview: Json<PaintingImage>,
 }
 
+impl<'r> FromRow<'r, PgRow> for Painting {
+    fn from_row(row: &'r PgRow) -> sqlx::Result<Self> {
+        let id: Uuid = row.try_get("id")?;
+        let created: DateTime<Utc> = row.try_get("created")?;
+        let price: i64 = row.try_get("price").unwrap_or(0);
+        let width: i64 = row.try_get("width").unwrap_or(0);
+        let height: i64 = row.try_get("height").unwrap_or(0);
+        let deleted = row.try_get("deleted").unwrap_or(None);
+
+        let preview_json: JsonValue = row.try_get("preview")?;
+        let preview: PaintingImage = serde_json::from_value(preview_json)
+            .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+        let title_json: JsonValue = row.try_get("painting_title")?;
+        let title: Translation =
+            serde_json::from_value(title_json).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+        let description_json: JsonValue = row.try_get("painting_description")?;
+        let description: Translation = serde_json::from_value(description_json)
+            .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+        let data_json: JsonValue = row.try_get("painting_description")?;
+        let data: HashMap<String, String> =
+            serde_json::from_value(data_json).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
+
+        Ok(Self {
+            id,
+            created,
+            deleted,
+            price,
+            painting_title: Some(title),
+            painting_description: Some(description),
+            data: Some(data),
+            width,
+            height,
+            preview: Json(preview),
+        })
+    }
+}
+
+impl Reply for Painting {
+    fn into_response(self) -> warp::reply::Response {
+        let json = json!({
+            "id": self.id,
+            "created": self.created,
+            "deleted": self.deleted,
+            "price": self.price,
+            "painting_title": self.painting_title,
+            "painting_description": self.painting_description,
+            "data": self.data,
+            "width": self.width,
+            "height": self.height,
+            "preview": self.preview,
+        });
+
+        warp::reply::json(&json).into_response()
+    }
+}
+
 impl Painting {
     pub fn get_one_query(id: Uuid) -> String {
         format!(
@@ -134,28 +221,73 @@ impl Painting {
         .to_string()
     }
 
-    pub fn get_all_query(limit: u32, offset: u32) -> String {
+    pub fn get_all_query(query: GetPaintingsQuery, language: Option<Language>) -> String {
+        let lang = if let Some(language_enum) = language {
+            language_enum
+        } else {
+            Language::Cs
+        };
+        let parsed_query = query.safe_parse(Some(lang));
+
         format!(
             r#"
-			SELECT
-				p.*,
-				(JSON_BUILD_OBJECT(
-					'id', pi.id,
-					'preview', pi.preview,
-					'urls', pi.urls,
-					'alt', pi.alt,
-					'title', pi.title,
-					'painting_id', pi.painting_id,
-					'status', status
-				)) AS preview
-			FROM rosemary.paintings p
-			LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
-			WHERE deleted IS NULL
-			ORDER BY p.created DESC
-			LIMIT {} OFFSET {}
-		"#,
-            limit, offset
+    	SELECT
+    		p.*,
+    		(JSON_BUILD_OBJECT(
+    			'id', pi.id,
+    			'preview', pi.preview,
+    			'urls', pi.urls,
+    			'alt', pi.alt,
+    			'title', pi.title,
+    			'painting_id', pi.painting_id,
+    			'status', status
+    		)) AS preview
+    	FROM rosemary.paintings p
+    	LEFT JOIN rosemary.painting_images pi ON pi.painting_id = p.id AND pi.preview = TRUE
+    	WHERE deleted IS NULL
+    	ORDER BY {} {}
+    	LIMIT {} OFFSET {}
+    "#,
+            parsed_query.sort, parsed_query.order, parsed_query.limit, parsed_query.offset
         )
+    }
+    pub fn get_all_stubs_query(query: GetPaintingsQuery, language: Option<Language>) -> String {
+        let lang = if let Some(language_enum) = language {
+            language_enum
+        } else {
+            Language::Cs
+        };
+        let lang_string = lang.to_string();
+        let parsed_query = query.safe_parse(Some(lang));
+
+        let mut select = sql::Select::new()
+            .select("p.id AS id")
+            .select("p.created AS created")
+            .select("p.price AS price")
+            .select("CONCAT(p.width, 'cm x ', p.height, 'cm') AS size")
+            .select(&format!("painting_title->>'{}' AS title", &lang_string))
+            .select(&format!("pi.alt->>'{}' AS preview_alt", &lang_string))
+            .select("pi.urls->>0 AS preview")
+            .from("rosemary.paintings p")
+            .left_join("rosemary.painting_images pi on pi.painting_id = p.id AND pi.preview = TRUE")
+            .where_clause("p.deleted IS NULL")
+            .limit(&format!("{}", parsed_query.limit))
+            .offset(&format!("{}", parsed_query.offset))
+            .order_by(&format!("{} {}", parsed_query.sort, parsed_query.order));
+
+        if let Some(search_value) = parsed_query.search {
+            select = select
+                .where_clause(&format!(
+                    "painting_title->>'{}' LIKE '%{}%'",
+                    &lang_string, &search_value
+                ))
+                .where_clause(&format!(
+                    "painting_description->>'{}' LIKE '%{}%'",
+                    &lang_string, &search_value
+                ));
+        }
+
+        select.to_string()
     }
 
     pub fn create_query(data: PaintingCreate) -> String {
@@ -266,64 +398,5 @@ impl Painting {
                 id
             )
         }
-    }
-}
-
-impl Reply for Painting {
-    fn into_response(self) -> warp::reply::Response {
-        let json = json!({
-            "id": self.id,
-            "created": self.created,
-            "deleted": self.deleted,
-            "price": self.price,
-            "painting_title": self.painting_title,
-            "painting_description": self.painting_description,
-            "data": self.data,
-            "width": self.width,
-            "height": self.height,
-            "preview": self.preview,
-        });
-
-        warp::reply::json(&json).into_response()
-    }
-}
-
-impl<'r> FromRow<'r, PgRow> for Painting {
-    fn from_row(row: &'r PgRow) -> sqlx::Result<Self> {
-        let id: Uuid = row.try_get("id")?;
-        let created: DateTime<Utc> = row.try_get("created")?;
-        let price: i64 = row.try_get("price").unwrap_or(0);
-        let width: i64 = row.try_get("width").unwrap_or(0);
-        let height: i64 = row.try_get("height").unwrap_or(0);
-        let deleted = row.try_get("deleted").unwrap_or(None);
-
-        let preview_json: JsonValue = row.try_get("preview")?;
-        let preview: PaintingImage = serde_json::from_value(preview_json)
-            .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-
-        let title_json: JsonValue = row.try_get("painting_title")?;
-        let title: Translation =
-            serde_json::from_value(title_json).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-
-        let description_json: JsonValue = row.try_get("painting_description")?;
-        let description: Translation = serde_json::from_value(description_json)
-            .map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-
-        let data_json: JsonValue = row.try_get("painting_description")?;
-        let data: HashMap<String, String> =
-            serde_json::from_value(data_json).map_err(|err| sqlx::Error::Decode(Box::new(err)))?;
-
-        Ok(Self {
-            id,
-            created,
-            deleted,
-            price,
-            painting_title: Some(title),
-            painting_description: Some(description),
-            data: Some(data),
-            width,
-            height,
-            preview: Json(preview),
-        })
     }
 }

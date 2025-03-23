@@ -2438,6 +2438,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha2",
+ "sql_query_builder",
  "sqlx",
  "tokio",
  "tokio-postgres",
@@ -2724,6 +2725,12 @@ dependencies = [
  "base64ct",
  "der",
 ]
+
+[[package]]
+name = "sql_query_builder"
+version = "2.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "635f6bb07a64bf4a9a55251b965fd3c7998ecb56f2aaa59f3a6abca6f3f07974"
 
 [[package]]
 name = "sqlformat"

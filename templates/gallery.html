@@ -20,50 +20,56 @@
 					class="fccc galleryFiltersWrapper"
 					style="margin-bottom: 20px;"
 				>
-					<div class="fccc galleryFiltersBody">
-						<div class="frss galleryFilters">
-							<select
-								class="form filterInput"
-								name="sort"
-							>
-								<option value="created">
-									{{ page.created }}
-								</option>
-								<option value="price">
-									{{ page.price }}
-								</option>
-								<option value="width">
-									{{ page.width }}
-								</option>
-								<option value="height">
-									{{ page.height }}
-								</option>
-								<option value="title">
-									{{ page.title }}
-								</option>
-								<option value="sold">
-									{{ page.sold }}
-								</option>
-							</select>
-							<select
-								class="form filterInput"
-								name="order"
-							>
-								<option value="asc">
-									{{ page.ascending }}
-								</option>
-								<option value="desc">
-									{{ page.descending }}
-								</option>
-							</select>
-							<input
-								type="text"
-								placeholder="search"
-								class="form filterInput"
-								name="search"
-							/>
+						<form
+							action="{{ page.filter_form_action }}"
+							method="get"
+						>
+						<div class="fccc galleryFiltersBody">
+							<div class="frss galleryFilters">
+								<select
+									class="form filterInput"
+									name="sort"
+								>
+									<option value="created">
+										{{ page.created }}
+									</option>
+									<option value="price">
+										{{ page.price }}
+									</option>
+									<option value="width">
+										{{ page.width }}
+									</option>
+									<option value="height">
+										{{ page.height }}
+									</option>
+									<option value="title">
+										{{ page.title }}
+									</option>
+									<option value="sold">
+										{{ page.sold }}
+									</option>
+								</select>
+								<select
+									class="form filterInput"
+									name="order"
+								>
+									<option value="asc">
+										{{ page.ascending }}
+									</option>
+									<option value="desc">
+										{{ page.descending }}
+									</option>
+								</select>
+								<input
+									type="text"
+									placeholder="search"
+									class="form filterInput"
+									name="search"
+								/>
+								<button type="submit">OK</button>
+							</div>
 						</div>
-					</div>
+					</form>
 				</div>
 				<div class="frcc galleryItems">
 					{% for gallery_item_stub in page.gallery_item_stubs %}
@@ -71,26 +77,32 @@
 					{% endfor %}
 				</div>
 				<div class="frcc galleryPagination">
-					<p style="margin-left: 20px;">0-25 / 356</p>
+					<p style="margin-left: 20px;">
+						{{ pagination.current_start }}-{{ pagination.current_end }} / {{ pagination.total }}
+					</p>
 					<span>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							height="48px"
-							viewBox="0 -960 960 960"
-							width="48px"
-							fill="black"
-						>
-							<path d="M560-280 360-480l200-200v400Z" />
-						</svg>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							height="48px"
-							viewBox="0 -960 960 960"
-							width="48px"
-							fill="black"
-						>
-							<path d="M400-280v-400l200 200-200 200Z" />
-						</svg>
+						<a href="{{ pagination.prev_page }}">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								height="48px"
+								viewBox="0 -960 960 960"
+								width="48px"
+								fill="black"
+							>
+								<path d="M560-280 360-480l200-200v400Z" />
+							</svg>
+						</a>
+						<a href="{{ pagination.next_page }}">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								height="48px"
+								viewBox="0 -960 960 960"
+								width="48px"
+								fill="black"
+							>
+								<path d="M400-280v-400l200 200-200 200Z" />
+							</svg>
+						</a>
 					</span>
 				</div>
 			</div>

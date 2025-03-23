@@ -1,5 +1,6 @@
 use crate::client::translations::{get_translation, Language, TranslationKeys};
 
+#[derive(Debug)]
 pub struct MetaProps<'a> {
     pub description: &'a str,
     pub keywords: &'a str,
@@ -36,6 +37,7 @@ impl<'a> MetaProps<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct NavbarProps<'a> {
     pub home: &'a str,
     pub gallery: &'a str,
@@ -62,6 +64,7 @@ impl<'a> NavbarProps<'a> {
     }
 }
 
+#[derive(Debug)]
 pub struct FooterProps<'a> {
     pub upcoming_events: &'a str,
     pub photo_pricing: &'a str,

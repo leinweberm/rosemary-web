@@ -8,11 +8,21 @@
 		id="navDesktopLinks"
 		class="frss"
 	>
-		<a href="/">{{ navbar.home }}</a>
-		<a href="/gallery">{{ navbar.gallery }}</a>
-		<a href="/photo">{{ navbar.photo }}</a>
-		<a href="/blog">{{ navbar.blog }}</a>
-		<a href="/contact">{{ navbar.contact }}</a>
+		<a href="/{{ meta.locale }}/">
+			{{ navbar.home }}
+		</a>
+		<a href="/{{ meta.locale }}/gallery?limit=20&offset=0&sort=created&order=DESC">
+			{{ navbar.gallery }}
+		</a>
+		<a href="/{{ meta.locale }}/photo">
+			{{ navbar.photo }}
+		</a>
+		<a href="/{{ meta.locale }}/blog">
+			{{ navbar.blog }}
+		</a>
+		<a href="/{{ meta.locale }}/contact">
+			{{ navbar.contact }}
+		</a>
 	</div>
 	<label for="navToggleCheckbox"></label>
 	<input
@@ -36,19 +46,29 @@
 		class="fccc"
 	>
 		<li class="frcc">
-			<a href="/">{{ navbar.home }}</a>
+			<a href="/">
+				{{ navbar.home }}
+			</a>
 		</li>
 		<li class="frcc">
-			<a href="/gallery">{{ navbar.gallery }}</a>
+			<a href="/gallery">
+				{{ navbar.gallery }}
+			</a>
 		</li>
 		<li class="frcc">
-			<a href="/photo">{{ navbar.photo }}</a>
+			<a href="/photo">
+				{{ navbar.photo }}
+			</a>
 		</li>
 		<li class="frcc">
-			<a href="/blog">{{ navbar.blog }}</a>
+			<a href="/blog">
+				{{ navbar.blog }}
+			</a>
 		</li>
 		<li class="frcc">
-			<a href="/contact">{{ navbar.contact }}</a>
+			<a href="/contact">
+				{{ navbar.contact }}
+			</a>
 		</li>
 	</ul>
 </nav>

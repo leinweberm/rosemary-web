@@ -18,17 +18,14 @@ async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection
             .fetch_one(&*count_client)
             .await
             .expect("Failed to count painting rows");
-
         count
     });
 
     let rows_client = Arc::clone(&client);
     let rows_task = tokio::spawn(async move {
-        let limit = query.limit.unwrap_or(20);
-        let offset = query.offset.unwrap_or(0);
-        let query = Painting::get_all_query(limit, offset);
-        debug!(target: "db", "paintings:get_all - Painting::get_all_query {}", &query);
-        let rows = sqlx::query_as::<_, Painting>(&query)
+        let select_query = Painting::get_all_query(query, None);
+        debug!(target: "db", "paintings:get_all - Painting::get_all_query {}", &select_query);
+        let rows = sqlx::query_as::<_, Painting>(&select_query)
             .fetch_all(&*rows_client)
             .await
             .expect("Failed to select painting rows");
