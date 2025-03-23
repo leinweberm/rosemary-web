@@ -1,8 +1,8 @@
 use askama::Template;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::client::component_props::{FooterProps, MetaProps, NavbarProps};
 use crate::client::translations::{get_translation, Language, TranslationKeys};
-use crate::requests::routes::frontend::common_dto::MetaProps;
 
 pub struct IndexPageData<'a> {
     title: &'a str,
@@ -18,6 +18,8 @@ pub struct IndexPageData<'a> {
 pub struct IndexPage<'a> {
     meta: MetaProps<'a>,
     page: IndexPageData<'a>,
+    navbar: NavbarProps<'a>,
+    footer: FooterProps<'a>,
 }
 
 pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
@@ -37,22 +39,14 @@ pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
             .replace("_", "&nbsp;"),
     };
 
-    let meta_props: MetaProps = MetaProps {
-        description: get_translation(TranslationKeys::IndexMetaDescription, Language::Cs),
-        keywords: get_translation(TranslationKeys::IndexMetaKeywords, Language::Cs),
-        author: "Rosemary - Michaela Halásová",
-        robots: "index, follow",
-        image: "http://static.localhost/images/herobaner_640.jpeg",
-        locale: language.to_string(),
-        favicon: "",
-        url: &format!("www.rosemary-artist.com/{}", language.to_string()),
-        twitter_handle: "",
-        summary_large_image: get_translation(TranslationKeys::IndexMetaImageSummary, Language::Cs),
-    };
+    let mut meta_props = MetaProps::default(Some(language));
+    meta_props.url = format!("www.rosemary-artist.com/{}/gallery", language.to_str());
 
     let template = IndexPage {
         meta: meta_props,
         page: page_data,
+        navbar: NavbarProps::default(Some(language)),
+        footer: FooterProps::default(Some(language)),
     };
 
     let result = template

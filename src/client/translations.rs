@@ -1,4 +1,4 @@
-pub struct PageTranslation {
+struct PageTranslation {
     pub en: &'static str,
     pub cs: &'static str,
 }
@@ -10,10 +10,17 @@ pub enum Language {
 }
 
 impl Language {
-    pub fn to_string(&self) -> &str {
+    pub fn to_str(&self) -> &str {
         match self {
             Language::Cs => "cs",
             Language::En => "en",
+        }
+    }
+
+    pub fn to_string(&self) -> String {
+        match self {
+            Language::Cs => String::from("cs"),
+            Language::En => String::from("en"),
         }
     }
 }
@@ -21,10 +28,14 @@ impl Language {
 #[derive(Copy, Debug, Clone)]
 pub enum TranslationKeys {
     Ascending,
+    Blog,
     Created,
     Contact,
     Descending,
+    FAQ,
+    Gallery,
     Height,
+    Home,
     IndexTitle,
     IndexHeroAlt,
     IndexPicturAlt,
@@ -33,19 +44,27 @@ pub enum TranslationKeys {
     IndexMetaKeywords,
     IndexMetaImageSummary,
     Navigation,
+    Photo,
+    PhotoPricing,
+    PhotoReservation,
     Price,
     Sold,
     Title,
+    UpcomingEvents,
     Width,
     None,
 }
 
-pub struct PageTranslations {
+struct PageTranslations {
     ascending: PageTranslation,
+    blog: PageTranslation,
     created: PageTranslation,
     contact: PageTranslation,
     descending: PageTranslation,
+    faq: PageTranslation,
+    gallery: PageTranslation,
     height: PageTranslation,
+    home: PageTranslation,
     index_title: PageTranslation,
     index_hero_alt: PageTranslation,
     index_picture_alt: PageTranslation,
@@ -54,9 +73,13 @@ pub struct PageTranslations {
     index_meta_keywords: PageTranslation,
     index_meta_image_summary: PageTranslation,
     navigation: PageTranslation,
+    photo: PageTranslation,
+    photo_pricing: PageTranslation,
+    photo_reservation: PageTranslation,
     price: PageTranslation,
     sold: PageTranslation,
     title: PageTranslation,
+    upcoming_events: PageTranslation,
     width: PageTranslation,
     none: PageTranslation,
 }
@@ -65,10 +88,14 @@ impl PageTranslations {
     pub fn get_translation(&self, key: TranslationKeys, lang: Language) -> &'static str {
         let translation = match key {
             TranslationKeys::Ascending => &self.ascending,
+            TranslationKeys::Blog => &self.blog,
             TranslationKeys::Created => &self.created,
             TranslationKeys::Contact => &self.contact,
             TranslationKeys::Descending => &self.descending,
+            TranslationKeys::FAQ => &self.faq,
+            TranslationKeys::Gallery => &self.gallery,
             TranslationKeys::Height => &self.height,
+            TranslationKeys::Home => &self.home,
             TranslationKeys::IndexTitle => &self.index_title,
             TranslationKeys::IndexHeroAlt => &self.index_hero_alt,
             TranslationKeys::IndexPicturAlt => &self.index_picture_alt,
@@ -77,9 +104,13 @@ impl PageTranslations {
             TranslationKeys::IndexMetaKeywords => &self.index_meta_keywords,
             TranslationKeys::IndexMetaImageSummary => &self.index_meta_image_summary,
             TranslationKeys::Navigation => &self.navigation,
+            TranslationKeys::Photo => &self.photo,
+            TranslationKeys::PhotoPricing => &self.photo,
+            TranslationKeys::PhotoReservation => &self.photo,
             TranslationKeys::Price => &self.price,
             TranslationKeys::Sold => &self.sold,
             TranslationKeys::Title => &self.title,
+            TranslationKeys::UpcomingEvents => &self.upcoming_events,
             TranslationKeys::Width => &self.width,
             TranslationKeys::None => &self.none,
         };
@@ -96,6 +127,10 @@ static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
         en: "ascending",
         cs: "vzestupně",
     },
+    blog: PageTranslation {
+        en: "blog",
+        cs: "blog",
+    },
     created: PageTranslation {
         en: "created",
         cs: "vytvořeno",
@@ -108,9 +143,21 @@ static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
         en: "descending",
         cs: "sestupně",
     },
+    faq: PageTranslation {
+        en: "FAQ",
+        cs: "často kladené otázky",
+    },
+    gallery: PageTranslation {
+        en: "gallery",
+        cs: "galerie",
+    },
     height: PageTranslation {
         en: "height",
         cs: "výška",
+    },
+    home: PageTranslation {
+        en: "home",
+        cs: "domů",
     },
     index_title: PageTranslation {
         en: "Rosemary - paintings, photo",
@@ -149,6 +196,18 @@ Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_
         en: "price",
         cs: "cena",
     },
+    photo: PageTranslation {
+        en: "photo",
+        cs: "foto",
+    },
+    photo_pricing: PageTranslation {
+        en: "photo pricing",
+        cs: "ceník focení",
+    },
+    photo_reservation: PageTranslation {
+        en: "reserve photoshooting",
+        cs: "rezervovat focení",
+    },
     sold: PageTranslation {
         en: "sold",
         cs: "prodáno",
@@ -156,6 +215,10 @@ Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_
     title: PageTranslation {
         en: "title",
         cs: "název",
+    },
+    upcoming_events: PageTranslation {
+        en: "upcoming events",
+        cs: "nadcházející události",
     },
     width: PageTranslation {
         en: "width",

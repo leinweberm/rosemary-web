@@ -1,7 +1,7 @@
 use askama::Template;
 use warp::{path, query, Filter, Rejection, Reply};
 
-use super::common_dto::MetaProps;
+use crate::client::component_props::{FooterProps, MetaProps, NavbarProps};
 use crate::client::translations::{get_translation, Language, TranslationKeys};
 use crate::requests::dto::get_paintings_query::GetPaintingsQuery;
 
@@ -30,6 +30,8 @@ pub struct GalleryPageData<'a> {
 pub struct GalleryPage<'a> {
     meta: MetaProps<'a>,
     page: GalleryPageData<'a>,
+    navbar: NavbarProps<'a>,
+    footer: FooterProps<'a>,
 }
 
 pub async fn get_template(locale: i8, _query: GetPaintingsQuery) -> Result<impl Reply, Rejection> {
@@ -51,22 +53,14 @@ pub async fn get_template(locale: i8, _query: GetPaintingsQuery) -> Result<impl 
         gallery_item_stubs: Vec::new(),
     };
 
-    let meta_props: MetaProps = MetaProps {
-        description: "",
-        keywords: "",
-        author: "Rosemary - Michaela Halásová",
-        robots: "index, follow",
-        image: "http://static.localhost/images/gallerymeta_640.jpeg",
-        locale: language.to_string(),
-        favicon: "",
-        url: "",
-        summary_large_image: "",
-        twitter_handle: "",
-    };
+    let mut meta_props = MetaProps::default(Some(language));
+    meta_props.url = format!("www.rosemary-artist.com/{}", language.to_str());
 
     let template = GalleryPage {
         meta: meta_props,
         page: page_data,
+        navbar: NavbarProps::default(Some(language)),
+        footer: FooterProps::default(Some(language)),
     };
 
     let result = template
