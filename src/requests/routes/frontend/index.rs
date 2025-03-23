@@ -31,9 +31,9 @@ pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
 
     let page_data: IndexPageData = IndexPageData {
         title: get_translation(TranslationKeys::IndexTitle, language),
-        hero_banner: "http://static.localhost/images/herobaner_1920.jpeg",
+        hero_banner: "http://static.localhost/images/hero_baner",
         hero_banner_alt: get_translation(TranslationKeys::IndexHeroAlt, language),
-        author_picture: "http://static.localhost/images/author_home.jpeg",
+        author_picture: "http://static.localhost/images/author_home",
         author_picture_alt: get_translation(TranslationKeys::IndexPicturAlt, language),
         author_description: &get_translation(TranslationKeys::IndexDescription, language)
             .replace("_", "&nbsp;"),
