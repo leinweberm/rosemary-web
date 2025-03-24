@@ -2,7 +2,7 @@ use serde_derive::{Deserialize, Serialize};
 
 use crate::client::translations::Language;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct GetPaintingsQueryParsed {
     pub limit: u8,
     pub offset: u32,
@@ -12,7 +12,7 @@ pub struct GetPaintingsQueryParsed {
     pub search: Option<String>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct GetPaintingsQuery {
     pub limit: Option<u8>,
     pub offset: Option<u32>,
@@ -48,7 +48,7 @@ impl GetPaintingsQuery {
         };
 
         let limit = if let Some(limit_value) = &self.limit {
-            if *limit_value < 0_u8 || *limit_value > 100_u8 {
+            if *limit_value > 100_u8 {
                 0_u8
             } else {
                 *limit_value
@@ -58,11 +58,7 @@ impl GetPaintingsQuery {
         };
 
         let offset = if let Some(offset_value) = &self.offset {
-            if *offset_value < 0_u32 {
-                0_u32
-            } else {
-                *offset_value
-            }
+            *offset_value
         } else {
             0_u32
         };
@@ -72,7 +68,9 @@ impl GetPaintingsQuery {
                 "created" => sort_value.clone(),
                 "price" => sort_value.clone(),
                 "painting_title" => String::from(format!("painting_title->>'{}'", lang)),
-                "painting_description" => String::from(format!("painting_description->>'{}'", lang)),
+                "painting_description" => {
+                    String::from(format!("painting_description->>'{}'", lang))
+                }
                 "width" => sort_value.clone(),
                 "height" => sort_value.clone(),
                 "sold" => sort_value.clone(),

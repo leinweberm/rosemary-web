@@ -19,6 +19,7 @@ pub enum ConfigField {
     DatabaseUrl,
     DatabaseCertPath,
     StaticFilesDir,
+    StaticFileUrl,
     JwtSecret,
     RegisterUserSecret,
     DatabaseCertProvided,
@@ -31,6 +32,7 @@ impl ConfigField {
             ConfigField::DatabaseUrl => "database_url",
             ConfigField::DatabaseCertPath => "database_cert_path",
             ConfigField::StaticFilesDir => "static_files_dir",
+            ConfigField::StaticFileUrl => "static_files_url",
             ConfigField::JwtSecret => "jwt_secret",
             ConfigField::RegisterUserSecret => "register_user_secret",
             ConfigField::DatabaseCertProvided => "database_cert_provided",
@@ -44,6 +46,7 @@ pub struct Config {
     pub database_url: String,
     pub database_cert_path: String,
     pub static_files_dir: String,
+    pub static_files_url: String,
     pub jwt_secret: String,
     pub register_user_secret: String,
     pub database_cert_provided: bool,
@@ -59,6 +62,7 @@ impl Config {
             ConfigField::DatabaseUrl => Box::new(self.database_url.clone()),
             ConfigField::DatabaseCertPath => Box::new(self.database_cert_path.clone()),
             ConfigField::StaticFilesDir => Box::new(self.static_files_dir.clone()),
+            ConfigField::StaticFileUrl => Box::new(self.static_files_url.clone()),
             ConfigField::JwtSecret => Box::new(self.jwt_secret.clone()),
             ConfigField::RegisterUserSecret => Box::new(self.register_user_secret.clone()),
             ConfigField::DatabaseCertProvided => Box::new(self.database_cert_provided),
@@ -95,6 +99,10 @@ pub async fn init() -> Result<(), io::Error> {
     let static_files_dir =
         env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
 
+    field = ConfigField::StaticFileUrl.to_str();
+    let static_files_url =
+        env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
+
     field = ConfigField::JwtSecret.to_str();
     let jwt_secret = env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
 
@@ -120,6 +128,7 @@ pub async fn init() -> Result<(), io::Error> {
         database_url,
         database_cert_path,
         static_files_dir,
+        static_files_url,
         jwt_secret,
         register_user_secret,
         database_cert_provided,

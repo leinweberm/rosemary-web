@@ -13,7 +13,7 @@ use warp::Reply;
 use crate::client::translations::Language;
 use crate::database::models::generics::{deserialize_json_string, Translation};
 use crate::database::models::image::PaintingImage;
-use crate::requests::dto::get_paintings_query::GetPaintingsQuery;
+use crate::requests::dto::get_paintings_query::{GetPaintingsQueryParsed, GetPaintingsQuery};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PaintingStub {
@@ -251,14 +251,17 @@ impl Painting {
             parsed_query.sort, parsed_query.order, parsed_query.limit, parsed_query.offset
         )
     }
-    pub fn get_all_stubs_query(query: GetPaintingsQuery, language: Option<Language>) -> String {
+    pub fn get_all_stubs_query(
+        parsed_query: GetPaintingsQueryParsed,
+        language: Option<Language>,
+        base_static_files_url: &str,
+    ) -> String {
         let lang = if let Some(language_enum) = language {
             language_enum
         } else {
             Language::Cs
         };
         let lang_string = lang.to_string();
-        let parsed_query = query.safe_parse(Some(lang));
 
         let mut select = sql::Select::new()
             .select("p.id AS id")
@@ -267,7 +270,7 @@ impl Painting {
             .select("CONCAT(p.width, 'cm x ', p.height, 'cm') AS size")
             .select(&format!("painting_title->>'{}' AS title", &lang_string))
             .select(&format!("pi.alt->>'{}' AS preview_alt", &lang_string))
-            .select("pi.urls->>0 AS preview")
+            .select(&format!("CONCAT('{}', pi.urls->>0) AS preview", base_static_files_url))
             .from("rosemary.paintings p")
             .left_join("rosemary.painting_images pi on pi.painting_id = p.id AND pi.preview = TRUE")
             .where_clause("p.deleted IS NULL")
@@ -275,7 +278,7 @@ impl Painting {
             .offset(&format!("{}", parsed_query.offset))
             .order_by(&format!("{} {}", parsed_query.sort, parsed_query.order));
 
-        if let Some(search_value) = parsed_query.search {
+        if let Some(search_value) = &parsed_query.search {
             select = select
                 .where_clause(&format!(
                     "painting_title->>'{}' LIKE '%{}%'",

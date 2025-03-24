@@ -11,7 +11,7 @@
 		<a href="/{{ meta.locale }}/">
 			{{ navbar.home }}
 		</a>
-		<a href="/{{ meta.locale }}/gallery?limit=20&offset=0&sort=created&order=DESC">
+		<a href="/{{ meta.locale }}/gallery?limit=20&offset=0&sort=created&order=desc">
 			{{ navbar.gallery }}
 		</a>
 		<a href="/{{ meta.locale }}/photo">
@@ -51,22 +51,22 @@
 			</a>
 		</li>
 		<li class="frcc">
-			<a href="/gallery">
+			<a href="/{{ meta.locale }}/gallery?limit=20&offset=0&sort=created&order=desc">
 				{{ navbar.gallery }}
 			</a>
 		</li>
 		<li class="frcc">
-			<a href="/photo">
+			<a href="/{{ meta.locale }}/photo">
 				{{ navbar.photo }}
 			</a>
 		</li>
 		<li class="frcc">
-			<a href="/blog">
+			<a href="/{{ meta.locale }}/blog">
 				{{ navbar.blog }}
 			</a>
 		</li>
 		<li class="frcc">
-			<a href="/contact">
+			<a href="/{{ meta.locale }}/contact">
 				{{ navbar.contact }}
 			</a>
 		</li>

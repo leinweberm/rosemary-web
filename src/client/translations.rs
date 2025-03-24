@@ -33,7 +33,9 @@ pub enum TranslationKeys {
     Contact,
     Descending,
     FAQ,
+    Filter,
     Gallery,
+    GalleryTitle,
     Height,
     Home,
     IndexTitle,
@@ -52,7 +54,6 @@ pub enum TranslationKeys {
     Title,
     UpcomingEvents,
     Width,
-    None,
 }
 
 struct PageTranslations {
@@ -62,7 +63,9 @@ struct PageTranslations {
     contact: PageTranslation,
     descending: PageTranslation,
     faq: PageTranslation,
+    filter: PageTranslation,
     gallery: PageTranslation,
+    gallery_title: PageTranslation,
     height: PageTranslation,
     home: PageTranslation,
     index_title: PageTranslation,
@@ -81,7 +84,6 @@ struct PageTranslations {
     title: PageTranslation,
     upcoming_events: PageTranslation,
     width: PageTranslation,
-    none: PageTranslation,
 }
 
 impl PageTranslations {
@@ -93,7 +95,9 @@ impl PageTranslations {
             TranslationKeys::Contact => &self.contact,
             TranslationKeys::Descending => &self.descending,
             TranslationKeys::FAQ => &self.faq,
+            TranslationKeys::Filter => &self.filter,
             TranslationKeys::Gallery => &self.gallery,
+            TranslationKeys::GalleryTitle => &self.gallery_title,
             TranslationKeys::Height => &self.height,
             TranslationKeys::Home => &self.home,
             TranslationKeys::IndexTitle => &self.index_title,
@@ -105,14 +109,13 @@ impl PageTranslations {
             TranslationKeys::IndexMetaImageSummary => &self.index_meta_image_summary,
             TranslationKeys::Navigation => &self.navigation,
             TranslationKeys::Photo => &self.photo,
-            TranslationKeys::PhotoPricing => &self.photo,
-            TranslationKeys::PhotoReservation => &self.photo,
+            TranslationKeys::PhotoPricing => &self.photo_pricing,
+            TranslationKeys::PhotoReservation => &self.photo_reservation,
             TranslationKeys::Price => &self.price,
             TranslationKeys::Sold => &self.sold,
             TranslationKeys::Title => &self.title,
             TranslationKeys::UpcomingEvents => &self.upcoming_events,
             TranslationKeys::Width => &self.width,
-            TranslationKeys::None => &self.none,
         };
 
         match lang {
@@ -147,9 +150,17 @@ static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
         en: "FAQ",
         cs: "často kladené otázky",
     },
+    filter: PageTranslation {
+        en: "filter",
+        cs: "filtrovar",
+    },
     gallery: PageTranslation {
         en: "gallery",
         cs: "galerie",
+    },
+    gallery_title: PageTranslation {
+        en: "Rosemary - gallery",
+        cs: "Rosemary - galerie",
     },
     height: PageTranslation {
         en: "height",
@@ -223,10 +234,6 @@ Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_
     width: PageTranslation {
         en: "width",
         cs: "šířka",
-    },
-    none: PageTranslation {
-        en: "- none -",
-        cs: "- none -",
     },
 };
 

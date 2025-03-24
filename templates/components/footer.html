@@ -15,13 +15,13 @@
 		<div>
 			<span>
 				<b>{{ footer.faq }}</b>
-				<a href="/upcoming-events">
+				<a href="{{ meta.locale }}/upcoming-events">
 					{{ footer.upcoming_events }}
 				</a>
-				<a href="/photo-pricing">
+				<a href="{{ meta.locale }}/photo-pricing">
 					{{ footer.photo_pricing }}
 				</a>
-				<a href="/photo-reservation">
+				<a href="{{ meta.locale }}/photo-reservation">
 					{{ footer.photo_reservation }}
 				</a>
 			</span>
@@ -29,19 +29,19 @@
 		<div>
 			<span>
 				<b>{{ footer.navigation }}</b>
-				<a href="/">
+				<a href="{{ meta.locale }}/">
 					{{ footer.home }}
 				</a>
-				<a href="/gallery">
+				<a href="{{ meta.locale }}/gallery?limit=20&offset=0&sort=created&order=desc">
 					{{ footer.gallery }}
 				</a>
-				<a href="/photo">
+				<a href="{{ meta.locale }}/photo">
 					{{ footer.navigation }}
 				</a>
-				<a href="/blog">
+				<a href="{{ meta.locale }}/blog">
 					{{ footer.blog }}
 				</a>
-				<a href="/contact">
+				<a href="{{ meta.locale }}/contact">
 					{{ footer.contact }}
 				</a>
 			</span>

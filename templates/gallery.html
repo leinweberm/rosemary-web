@@ -5,8 +5,6 @@
 	{% include "./components/head.html" %}
 	<link rel="stylesheet" href="http://static.localhost/assets/form.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/gallery.css">
-	<script type="module" src="http://static.localhost/assets/utils.js"></script>
-	<script defer src="http://static.localhost/assets/gallery.js"></script>
 </head>
 
 <body>
@@ -17,8 +15,8 @@
 		<div class="contentContainer">
 			<div class="fccs galleryBody">
 				<div
-					class="fccc galleryFiltersWrapper"
-					style="margin-bottom: 20px;"
+					class="galleryFiltersWrapper"
+					style="margin-bottom: 20px; display: flex; flex-direction: column; justify-content: center;"
 				>
 						<form
 							action="{{ page.filter_form_action }}"
@@ -26,37 +24,65 @@
 						>
 						<div class="fccc galleryFiltersBody">
 							<div class="frss galleryFilters">
+								<input type="hidden" name="limit" value="20">
+								<input type="hidden" name="offset" value="0">
 								<select
 									class="form filterInput"
 									name="sort"
+									style="width: 250px"
 								>
-									<option value="created">
+									<option
+										value="created"
+										{% if page.current_sort == "created" %}selected{% endif %}
+									>
 										{{ page.created }}
 									</option>
-									<option value="price">
+									<option
+										value="price"
+										{% if page.current_sort == "price" %}selected{% endif %}
+									>
 										{{ page.price }}
 									</option>
-									<option value="width">
+									<option
+										value="width"
+										{% if page.current_sort == "width" %}selected{% endif %}
+									>
 										{{ page.width }}
 									</option>
-									<option value="height">
+									<option
+										value="height"
+										{% if page.current_sort == "height" %}selected{% endif %}
+									>
 										{{ page.height }}
 									</option>
-									<option value="title">
+									<option
+										value="painting_title"
+										{% if page.current_sort == "painting_title" %}selected{% endif %}
+									>
 										{{ page.title }}
 									</option>
-									<option value="sold">
+									<option
+										value="sold"
+										{% if page.current_sort == "sold" %}selected{% endif %}
+									>
 										{{ page.sold }}
 									</option>
 								</select>
 								<select
 									class="form filterInput"
 									name="order"
+									style="width: 250px"
 								>
-									<option value="asc">
+									<option
+										value="asc"
+										{% if page.current_order == "asc" %}selected{% endif %}
+									>
 										{{ page.ascending }}
 									</option>
-									<option value="desc">
+									<option
+										value="desc"
+										{% if page.current_order == "desc" %}selected{% endif %}
+									>
 										{{ page.descending }}
 									</option>
 								</select>
@@ -65,8 +91,12 @@
 									placeholder="search"
 									class="form filterInput"
 									name="search"
+									style="width: 250px"
+									value="{{ page.current_search }}"
 								/>
-								<button type="submit">OK</button>
+								<button type="submit">
+									{{ page.filter_action }}
+								</button>
 							</div>
 						</div>
 					</form>
@@ -81,28 +111,32 @@
 						{{ pagination.current_start }}-{{ pagination.current_end }} / {{ pagination.total }}
 					</p>
 					<span>
-						<a href="{{ pagination.prev_page }}">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								height="48px"
-								viewBox="0 -960 960 960"
-								width="48px"
-								fill="black"
-							>
-								<path d="M560-280 360-480l200-200v400Z" />
-							</svg>
-						</a>
-						<a href="{{ pagination.next_page }}">
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								height="48px"
-								viewBox="0 -960 960 960"
-								width="48px"
-								fill="black"
-							>
-								<path d="M400-280v-400l200 200-200 200Z" />
-							</svg>
-						</a>
+						{% if page.show_prev_page == true %}
+							<a href="{{ pagination.prev_page }}">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									height="48px"
+									viewBox="0 -960 960 960"
+									width="48px"
+									fill="black"
+								>
+									<path d="M560-280 360-480l200-200v400Z" />
+								</svg>
+							</a>
+						{% endif %}
+						{% if page.show_next_page == true %}
+							<a href="{{ pagination.next_page }}">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									height="48px"
+									viewBox="0 -960 960 960"
+									width="48px"
+									fill="black"
+								>
+									<path d="M400-280v-400l200 200-200 200Z" />
+								</svg>
+							</a>
+						{% endif %}
 					</span>
 				</div>
 			</div>

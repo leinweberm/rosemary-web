@@ -14,7 +14,7 @@ pub struct IndexPageData<'a> {
 }
 
 #[derive(Template)]
-#[template(path = "./index.html")]
+#[template(path = "./index.html", escape = "none")]
 pub struct IndexPage<'a> {
     meta: MetaProps<'a>,
     page: IndexPageData<'a>,
@@ -22,13 +22,7 @@ pub struct IndexPage<'a> {
     footer: FooterProps<'a>,
 }
 
-pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
-    let language = if locale == 0 {
-        Language::Cs
-    } else {
-        Language::En
-    };
-
+pub async fn get_template(language: Language) -> Result<impl Reply, Rejection> {
     let page_data: IndexPageData = IndexPageData {
         title: get_translation(TranslationKeys::IndexTitle, language),
         hero_banner: "http://static.localhost/images/hero_baner",
@@ -41,6 +35,10 @@ pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
 
     let mut meta_props = MetaProps::default(Some(language));
     meta_props.url = format!("www.rosemary-artist.com/{}/gallery", language.to_str());
+    meta_props.description = get_translation(TranslationKeys::IndexMetaDescription, language);
+    meta_props.keywords = get_translation(TranslationKeys::IndexMetaKeywords, language);
+    meta_props.summary_large_image =
+        get_translation(TranslationKeys::IndexMetaImageSummary, language);
 
     let template = IndexPage {
         meta: meta_props,
@@ -59,19 +57,19 @@ pub async fn get_template(locale: i8) -> Result<impl Reply, Rejection> {
 pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
-        .and_then(|| async { get_template(0).await })
+        .and_then(|| async { get_template(Language::Cs).await })
 }
 
 pub fn get_cz() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(path("cz"))
+        .and(path(Language::Cs.to_str()))
         .and(path::end())
-        .and_then(|| async { get_template(0).await })
+        .and_then(|| async { get_template(Language::Cs).await })
 }
 
 pub fn get_en() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(path("en"))
+        .and(path(Language::En.to_str()))
         .and(path::end())
-        .and_then(|| async { get_template(1).await })
+        .and_then(|| async { get_template(Language::En).await })
 }
