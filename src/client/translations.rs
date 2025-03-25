@@ -1,4 +1,6 @@
-struct PageTranslation {
+use crate::client::localization::PAGE_TRANSLATIONS;
+
+pub struct PageTranslation {
     pub en: &'static str,
     pub cs: &'static str,
 }
@@ -32,10 +34,12 @@ pub enum TranslationKeys {
     Created,
     Contact,
     Descending,
+    Email,
     FAQ,
     Filter,
     Gallery,
     GalleryTitle,
+    General,
     Height,
     Home,
     IndexTitle,
@@ -45,45 +49,61 @@ pub enum TranslationKeys {
     IndexMetaDescription,
     IndexMetaKeywords,
     IndexMetaImageSummary,
+    Message,
+    Name,
     Navigation,
+    Painting,
+    Phone,
     Photo,
+    Photography,
     PhotoPricing,
     PhotoReservation,
     Price,
+    Send,
     Sold,
+    Subject,
     Title,
     UpcomingEvents,
     Width,
 }
 
-struct PageTranslations {
-    ascending: PageTranslation,
-    blog: PageTranslation,
-    created: PageTranslation,
-    contact: PageTranslation,
-    descending: PageTranslation,
-    faq: PageTranslation,
-    filter: PageTranslation,
-    gallery: PageTranslation,
-    gallery_title: PageTranslation,
-    height: PageTranslation,
-    home: PageTranslation,
-    index_title: PageTranslation,
-    index_hero_alt: PageTranslation,
-    index_picture_alt: PageTranslation,
-    index_description: PageTranslation,
-    index_meta_description: PageTranslation,
-    index_meta_keywords: PageTranslation,
-    index_meta_image_summary: PageTranslation,
-    navigation: PageTranslation,
-    photo: PageTranslation,
-    photo_pricing: PageTranslation,
-    photo_reservation: PageTranslation,
-    price: PageTranslation,
-    sold: PageTranslation,
-    title: PageTranslation,
-    upcoming_events: PageTranslation,
-    width: PageTranslation,
+pub struct PageTranslations {
+    pub ascending: PageTranslation,
+    pub blog: PageTranslation,
+    pub created: PageTranslation,
+    pub contact: PageTranslation,
+    pub descending: PageTranslation,
+    pub email: PageTranslation,
+    pub faq: PageTranslation,
+    pub filter: PageTranslation,
+    pub gallery: PageTranslation,
+    pub gallery_title: PageTranslation,
+    pub general: PageTranslation,
+    pub height: PageTranslation,
+    pub home: PageTranslation,
+    pub index_title: PageTranslation,
+    pub index_hero_alt: PageTranslation,
+    pub index_picture_alt: PageTranslation,
+    pub index_description: PageTranslation,
+    pub index_meta_description: PageTranslation,
+    pub index_meta_keywords: PageTranslation,
+    pub index_meta_image_summary: PageTranslation,
+    pub message: PageTranslation,
+    pub name: PageTranslation,
+    pub navigation: PageTranslation,
+    pub painting: PageTranslation,
+    pub phone: PageTranslation,
+    pub photo: PageTranslation,
+    pub photography: PageTranslation,
+    pub photo_pricing: PageTranslation,
+    pub photo_reservation: PageTranslation,
+    pub price: PageTranslation,
+    pub send: PageTranslation,
+    pub sold: PageTranslation,
+    pub subject: PageTranslation,
+    pub title: PageTranslation,
+    pub upcoming_events: PageTranslation,
+    pub width: PageTranslation,
 }
 
 impl PageTranslations {
@@ -94,10 +114,12 @@ impl PageTranslations {
             TranslationKeys::Created => &self.created,
             TranslationKeys::Contact => &self.contact,
             TranslationKeys::Descending => &self.descending,
+            TranslationKeys::Email => &self.email,
             TranslationKeys::FAQ => &self.faq,
             TranslationKeys::Filter => &self.filter,
             TranslationKeys::Gallery => &self.gallery,
             TranslationKeys::GalleryTitle => &self.gallery_title,
+            TranslationKeys::General => &self.general,
             TranslationKeys::Height => &self.height,
             TranslationKeys::Home => &self.home,
             TranslationKeys::IndexTitle => &self.index_title,
@@ -108,11 +130,18 @@ impl PageTranslations {
             TranslationKeys::IndexMetaKeywords => &self.index_meta_keywords,
             TranslationKeys::IndexMetaImageSummary => &self.index_meta_image_summary,
             TranslationKeys::Navigation => &self.navigation,
+            TranslationKeys::Message => &self.message,
+            TranslationKeys::Name => &self.name,
+            TranslationKeys::Painting => &self.painting,
+            TranslationKeys::Phone => &self.phone,
             TranslationKeys::Photo => &self.photo,
+            TranslationKeys::Photography => &self.photography,
             TranslationKeys::PhotoPricing => &self.photo_pricing,
             TranslationKeys::PhotoReservation => &self.photo_reservation,
             TranslationKeys::Price => &self.price,
+            TranslationKeys::Send => &self.send,
             TranslationKeys::Sold => &self.sold,
+            TranslationKeys::Subject => &self.subject,
             TranslationKeys::Title => &self.title,
             TranslationKeys::UpcomingEvents => &self.upcoming_events,
             TranslationKeys::Width => &self.width,
@@ -124,118 +153,6 @@ impl PageTranslations {
         }
     }
 }
-
-static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
-    ascending: PageTranslation {
-        en: "ascending",
-        cs: "vzestupně",
-    },
-    blog: PageTranslation {
-        en: "blog",
-        cs: "blog",
-    },
-    created: PageTranslation {
-        en: "created",
-        cs: "vytvořeno",
-    },
-    contact: PageTranslation {
-        en: "contact",
-        cs: "kontakt",
-    },
-    descending: PageTranslation {
-        en: "descending",
-        cs: "sestupně",
-    },
-    faq: PageTranslation {
-        en: "FAQ",
-        cs: "často kladené otázky",
-    },
-    filter: PageTranslation {
-        en: "filter",
-        cs: "filtrovar",
-    },
-    gallery: PageTranslation {
-        en: "gallery",
-        cs: "galerie",
-    },
-    gallery_title: PageTranslation {
-        en: "Rosemary - gallery",
-        cs: "Rosemary - galerie",
-    },
-    height: PageTranslation {
-        en: "height",
-        cs: "výška",
-    },
-    home: PageTranslation {
-        en: "home",
-        cs: "domů",
-    },
-    index_title: PageTranslation {
-        en: "Rosemary - paintings, photo",
-        cs: "Rosemary - obrazy, foto",
-    },
-    index_hero_alt: PageTranslation {
-        en: "rosemary artist hero landing page banner",
-        cs: "hlavní stránka webových stránek výtvarnice rosemary",
-    },
-    index_picture_alt: PageTranslation {
-        en: "author home page profile picture",
-        cs: "profilový obrázek autorky rosemary",
-    },
-    index_description: PageTranslation {
-        en: r#"Through working_in a_bank, visiting monks in_the_Himalayas of_Nepal, experiencing multiple personal rises and falls to_finally finding a_comfort in_expressing my feelings and_emotions on_canvas or_through photography.
-Passing control of_my_hands to_whatever lies deep down within my_subconsciousness, letting it flow freely in_harmony with the tunes of_my_favorite music.
-It_is_not a_portrait, it_is_not a_landscape either, though people may see various things in_it, but most importantly, it_is_me."#,
-        cs: r#"Prací v_bance, návštěvou mnichů v_klášterech ležících v_tibetských Himalájích, mnoha osobními vzestupy a_pády, tím_vším jsem_si_v_životě prošla, než jsem nalezla útěchu a_klid ve_vyjadřování svých emocí na_malířské plátno nebo_fotografický papír.
-Rytmus mé_oblíbené hudby probouzí něco v_mém nitru a_vede můj štětec.
-Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_nejsou to_ani_krajiny, jsem_to_já."#,
-    },
-    index_meta_description: PageTranslation {
-        en: "Rosemary is abstract painter and photographer located in Prague, Czechia",
-        cs: "Rosemary je abstraktní malířka a fotografka žijící v Praze, Česká Republicka",
-    },
-    index_meta_keywords: PageTranslation {
-        en: "paitings, abstract, oil, photo, family, weddings, art, paint",
-        cs: "obrazy, fotografie, foto, abstrakce, olej, umění, malování",
-    },
-    index_meta_image_summary: PageTranslation { en: "", cs: "" },
-    navigation: PageTranslation {
-        en: "navigation",
-        cs: "navigace",
-    },
-    price: PageTranslation {
-        en: "price",
-        cs: "cena",
-    },
-    photo: PageTranslation {
-        en: "photo",
-        cs: "foto",
-    },
-    photo_pricing: PageTranslation {
-        en: "photo pricing",
-        cs: "ceník focení",
-    },
-    photo_reservation: PageTranslation {
-        en: "reserve photoshooting",
-        cs: "rezervovat focení",
-    },
-    sold: PageTranslation {
-        en: "sold",
-        cs: "prodáno",
-    },
-    title: PageTranslation {
-        en: "title",
-        cs: "název",
-    },
-    upcoming_events: PageTranslation {
-        en: "upcoming events",
-        cs: "nadcházející události",
-    },
-    width: PageTranslation {
-        en: "width",
-        cs: "šířka",
-    },
-};
 
 pub fn get_translation(key: TranslationKeys, lang: Language) -> &'static str {
     PAGE_TRANSLATIONS.get_translation(key, lang)

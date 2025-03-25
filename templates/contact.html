@@ -2,93 +2,118 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Rosemary</title>
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-	<link rel="preconnect" href="https://fonts.googleapis.com">
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet">
-	<link rel="stylesheet" href="http://static.localhost/assets/main.css">
-	<script src="http://static.localhost/assets/main.js"></script>
+	{% include "./components/head.html" %}
+	<link rel="stylesheet" href="http://static.localhost/assets/form.css">
 </head>
 
 <body>
-	<!-- NAV START -->
-	<nav id="nav">
-		<div id="navBackground"></div>
-		<div id="navDecorativeLine"></div>
-		<div id="navDesktopLinks">
-			<a href="/">HOME</a>
-			<a href="/gallery">GALLERY</a>
-			<a href="/photo">PHOTO</a>
-			<a href="/blog">BLOG</a>
-			<a href="/contact">CONTACT</a>
-		</div>
-		<label for="navToggleCheckbox"></label><input
-			type="checkbox"
-			id="navToggleCheckbox"
-			autocomplete="off"
-		/>
-		<div id="navTogglePseudo">
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				height="40px"
-				viewBox="0 -960 960 960"
-				width="40px"
-				fill="white"
+	{% include "./components/navbar.html" %}
+	<div
+		class="fccs contentContainer"
+		style="padding-top: 70px;"
+	>
+		<iframe
+			id="hiddenFrame"
+			name="hiddenFrame"
+			style="display:none;"
+		></iframe>
+		<form
+			class="fccc contactFormBody"
+			style="margin-top: 24px"
+			action="https://rosemary-artist.com/api/v1.0/contact-form"
+			method="get"
+			target="hiddenFrame"
+		>
+			<div class="contactFormInnerBody">
+				<img
+					src="http://static.localhost/images/contact_me_photo.jpg"
+					width="250px"
+					height="250px"
+					alt="Rosemary, the author"
+				>
+			</div>
+			<label
+				htmlFor="name"
+				for="name"
+				class="contactFormLabel"
 			>
-				<path d="M120-240v-66.67h720V-240H120Zm0-206.67v-66.66h720v66.66H120Zm0-206.66V-720h720v66.67H120Z"/>
-			</svg>
-		</div>
-		<ul id="navToggleMenu">
-			<li><a href="/">HOME</a></li>
-			<li><a href="/gallery">GALLERY</a></li>
-			<li><a href="/photo">PHOTO</a></li>
-			<li><a href="/blog">BLOG</a></li>
-			<li><a href="/contact">CONTACT</a></li>
-		</ul>
-	</nav>
-
-	<!-- CONTENT START -->
-	<div class="fccs contentContainer" style="padding-top: 70px;">
-
+				{{ page.name }}
+			</label>
+			<input
+				id="name"
+				name="name"
+				type="text"
+				placeholder="Firstname Lastname"
+				class="contactFormInput"
+				required
+			>
+			<label
+				htmlFor="email"
+				for="email"
+				class="contactFormLabel"
+			>
+				{{ page.email }}
+			</label>
+			<input
+				id="email"
+				name="email"
+				type="email"
+				placeholder="your.email@domain.com"
+				class="contactFormInput"
+				autocomplete="email"
+				required
+			>
+			<label
+				htmlFor="phone"
+				for="phone"
+				class="contactFormLabel"
+			>
+				{{ page.phone }}
+			</label>
+			<input
+				id="phone"
+				name="phone"
+				type="tel"
+				placeholder="+420 777 666 555"
+				class="contactFormInput"
+				pattern="\+\d{3} \d{3} \d{3} \d{3}"
+				autocomplete="tel"
+			>
+			<label
+				htmlFor="subject"
+				for="subject"
+				class="contactFormLabel"
+			>
+				{{ page.subject }}
+			</label>
+			<select
+				id="subject"
+				name="subject"
+				class="contactFormInput"
+			>
+				<option value="obraz">{{ page.painting }}</option>
+				<option value="focení">{{ page.photography }}</option>
+				<option value="všeobecný" selected>{{ page.general }}</option>
+			</select>
+			<label
+				htmlFor="message"
+				for="message"
+				class="contactFormLabel"
+			>
+				{{ page.message }}
+			</label>
+			<textarea
+				id="message"
+				name="message"
+				class="contactFormInput"
+				rows="10"
+			></textarea>
+			<button type="submit" style="margin-bottom: 48px">
+				{{ page.send }}
+			</button>
+		</form>
 	</div>
-	<!-- FOOTER START -->
-	<footer id="footer">
-		<section>
-			<div>
-				<span>
-					<b>CONTACT</b>
-					<p>rosemaryphotography@seznam.cz</p>
-					<a href="https://www.instagram.com/rozmarynamaluje/">
-						instagram
-					</a>
-					<a href="https://www.facebook.com/p/Rozmar%C3%BDna-maluje-100077482535221/">
-						facebook
-					</a>
-				</span>
-			</div>
-			<div>
-				<span>
-					<b>FAQ</b>
-					<a href="/upcomin-events">upcoming events</a>
-					<a href="/photo-pricing">photo pricing</a>
-					<a href="/photo-reservation">photo reservation</a>
-				</span>
-			</div>
-			<div>
-				<span>
-					<b>NAVIGATION</b>
-					<a href="/">home page</a>
-					<a href="/gallery">paintings</a>
-					<a href="/photo">photo</a>
-					<a href="/blog">contact</a>
-					<a href="/contanct">contact</a>
-				</span>
-			</div>
-		<section>
-	</footer>
+	{% include "./components/footer.html" %}
 </body>
 
 </html>

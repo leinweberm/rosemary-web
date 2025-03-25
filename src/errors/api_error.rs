@@ -156,6 +156,17 @@ impl InternalServerError {
         };
         warp::reply::with_status(warp::reply::json(&response), self.status_code)
     }
+
+    pub fn html_response(&self) -> String {
+        String::from(format!(
+            r#"
+		<h1>Internal Server Error</h1>
+		<b>status: {:?}</b>
+		<p>statusCode: {:?}</p>
+		"#,
+            &self.status, &self.status_code
+        ))
+    }
 }
 
 impl reject::Reject for InternalServerError {}

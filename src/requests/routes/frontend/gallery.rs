@@ -49,7 +49,7 @@ struct GalleryPage<'a> {
     pagination: PaginationData<'a>,
 }
 
-pub async fn get_template(
+async fn get_template(
     language: Language,
     query: GetPaintingsQuery,
 ) -> Result<impl Reply, Rejection> {

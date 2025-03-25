@@ -13,7 +13,7 @@ use warp::Reply;
 use crate::client::translations::Language;
 use crate::database::models::generics::{deserialize_json_string, Translation};
 use crate::database::models::image::PaintingImage;
-use crate::requests::dto::get_paintings_query::{GetPaintingsQueryParsed, GetPaintingsQuery};
+use crate::requests::dto::get_paintings_query::{GetPaintingsQuery, GetPaintingsQueryParsed};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct PaintingStub {
@@ -270,7 +270,10 @@ impl Painting {
             .select("CONCAT(p.width, 'cm x ', p.height, 'cm') AS size")
             .select(&format!("painting_title->>'{}' AS title", &lang_string))
             .select(&format!("pi.alt->>'{}' AS preview_alt", &lang_string))
-            .select(&format!("CONCAT('{}', pi.urls->>0) AS preview", base_static_files_url))
+            .select(&format!(
+                "CONCAT('{}', pi.urls->>0) AS preview",
+                base_static_files_url
+            ))
             .from("rosemary.paintings p")
             .left_join("rosemary.painting_images pi on pi.painting_id = p.id AND pi.preview = TRUE")
             .where_clause("p.deleted IS NULL")

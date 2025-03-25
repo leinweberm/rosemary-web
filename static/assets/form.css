@@ -15,7 +15,8 @@ button:hover {
 	color: black;
 }
 
-input:is(.form), select:is(.form) {
+input:is(.form),
+select:is(.form) {
 	width: 250px;
 	font-size: 1rem;
 	padding: 10px;
@@ -23,8 +24,36 @@ input:is(.form), select:is(.form) {
 }
 
 @media screen and (max-width: 720px) {
-	input:is(.form), select:is(.form) {
+
+	input:is(.form),
+	select:is(.form) {
 		font-size: 1.25rem;
 		width: 100%;
 	}
+}
+
+.contactFormBody {
+	width: 100%;
+	max-width: 500px;
+	min-width: 250px;
+}
+
+.contactFormInnerBody {
+	height: 250px;
+	width: 250px;
+	border-radius: 50%;
+	overflow: hidden
+}
+
+.contactFormInput {
+	width: 80%;
+	margin-bottom: 10px;
+	height: auto;
+	padding: 10px 10px;
+	font-size: 1rem;
+}
+
+.contactFormLabel {
+	width: 80%;
+	margin: 20px 0 10px 0;
 }

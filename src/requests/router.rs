@@ -12,6 +12,10 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
         .or(routes::frontend::gallery::get())
         .or(routes::frontend::gallery::get_cz())
         .or(routes::frontend::gallery::get_en())
+        // GET /contact
+        .or(routes::frontend::contact::get())
+        .or(routes::frontend::contact::get_cz())
+        .or(routes::frontend::contact::get_en())
         // GET /api/v0.0/paintings/:Uuid
         .or(routes::v1_0::paintings::get::get())
         // GET /api/v1.0/paintings
