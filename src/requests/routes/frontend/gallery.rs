@@ -143,7 +143,7 @@ async fn get_template(
 
     let pagination_data: PaginationData = PaginationData {
         total: parsed_count,
-        current_start: parsed_query.offset,
+        current_start: parsed_query.offset + 1,
         prev_page: &format!(
             "/{}/gallery?limit={}&offset={}&sort={}&order={}",
             &language_string,
