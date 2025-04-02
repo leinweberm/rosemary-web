@@ -37,7 +37,7 @@
 	<link rel="stylesheet" href="http://static.localhost/assets/main.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/navbar.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/galleryDetail.css">
-	<script src="http://static.localhost/assets/main.js"></script>
+	<script src="http://static.localhost/assets/main.js" async></script>
 	<script type="module" src="http://static.localhost/assets/utils.js"></script>
 </head>
 
@@ -101,8 +101,54 @@
 	<!-- BODY -->
 	<div class="content fcss">
 		<div class="contentContainer">
-			<div class="frss galleryItemBody">
-				<div class="fcss galleryItemBodyPart">
+			<div class="paintingContent">
+				<div
+					class="paintingContentItem paintingTitle"
+					style="margin-bottom: 20px;"
+				>
+					<h1>Whispers of Color</h1>
+				</div>
+				<div
+					class="paintingContentItem paintingDescription"
+				>
+					<p>In the realm where form and structure dissolve, "Whispers of Color" emerges as a testament to the
+						boundless potential of abstract art. This oil painting, a symphony of vibrant hues and fluid brushstrokes,
+						invites the viewer to explore the depths of their imagination.
+						<br /><br />
+						The canvas is a dance of contrasts, where bold, sweeping gestures meet delicate, intricate details. Each
+						layer of paint tells a story, whispering secrets of emotion and movement that transcend the confines of
+						literal representation. The artist's hand is evident in every stroke, a testament to the spontaneity and
+						intuition that guide the creative process.
+						<br /><br />
+						At the heart of this abstract masterpiece lies a profound exploration of color and form. The interplay of
+						light and shadow creates a dynamic energy that pulses with life, drawing the eye in and encouraging
+						contemplation. The absence of recognizable forms allows the viewer to project their own interpretations
+						onto the canvas, making each encounter with the artwork a unique and personal experience.
+						<br /><br />
+						"Whispers of Color" is more than just a painting; it is a journey into the unknown, a celebration of the
+						abstract, and a testament to the power of art to inspire and provoke. It stands as a reminder that beauty
+						and meaning can be found in the most unexpected places, hidden within the swirls and strokes of an
+						artist's vision.
+					</p>
+				</div>
+				<div class="paintingContentItem paintingInfo">
+					<div
+						class="fccc infoDimensions"
+						style="width: 320px; height: 180px; margin-bottom: 40px;"
+					>
+						<b>
+							320x180
+							<br/>
+							cm
+							<br/>
+						</b>
+						<p style="color: silver">oil on canvas</p>
+					</div>
+					<button class="buyButton">
+						<b>Koupit 700$</b>
+					</button>
+				</div>
+				<div class="paintingContentItem carousel">
 					<div class="fccc galleryItemBodyPicture">
 						<img
 							id="mainPaintingImage"
@@ -112,47 +158,49 @@
 					</div>
 					<div class="frss galleryItemBodyPictures">
 						<img
-							class="paintingImage"
-							height="100px"
-							style="margin: 10px;"
-							src="http://static.localhost/images/0317da4e-1903-4204-8b41-2a8b524ba036_320.jpg"
+							class="paintingImage activePreview"
+							src="http://static.localhost/images/4d9d7f68-f4bb-4adf-b743-516973c554c1_320.jpg"
 						>
 						<img
 							class="paintingImage"
-							height="100px"
-							style="margin: 10px;"
 							src="http://static.localhost/images/8c76c17a-d063-4d48-a255-0f4d7cd8998b_320.jpg"
 						>
 						<img
 							class="paintingImage"
-							height="100px"
-							style="margin: 10px;"
+							src="http://static.localhost/images/e6f63069-cea4-43b8-865f-c08409181e13_320.jpg"
+						>
+								<img
+							class="paintingImage"
+							src="http://static.localhost/images/0317da4e-1903-4204-8b41-2a8b524ba036_320.jpg"
+						>
+						<img
+							class="paintingImage"
+							loading="lazy"
+							src="http://static.localhost/images/8c76c17a-d063-4d48-a255-0f4d7cd8998b_320.jpg"
+						>
+						<img
+							class="paintingImage"
+							loading="lazy"
+							src="http://static.localhost/images/e6f63069-cea4-43b8-865f-c08409181e13_320.jpg"
+						>
+								<img
+							class="paintingImage"
+							loading="lazy"
+							src="http://static.localhost/images/0317da4e-1903-4204-8b41-2a8b524ba036_320.jpg"
+						>
+						<img
+							class="paintingImage"
+							loading="lazy"
+							src="http://static.localhost/images/8c76c17a-d063-4d48-a255-0f4d7cd8998b_320.jpg"
+						>
+						<img
+							class="paintingImage"
+							loading="lazy"
 							src="http://static.localhost/images/e6f63069-cea4-43b8-865f-c08409181e13_320.jpg"
 						>
 					</div>
-				</div>
-				<div class="galleryItemBodyPart">
-					<div class="fccs galleryItemBodyInfo">
-						<h1>Whispers of Color</h1>
-						<p>In the realm where form and structure dissolve, "Whispers of Color" emerges as a testament to the
-							boundless potential of abstract art. This oil painting, a symphony of vibrant hues and fluid brushstrokes,
-							invites the viewer to explore the depths of their imagination.
-							<br /><br />
-							The canvas is a dance of contrasts, where bold, sweeping gestures meet delicate, intricate details. Each
-							layer of paint tells a story, whispering secrets of emotion and movement that transcend the confines of
-							literal representation. The artist's hand is evident in every stroke, a testament to the spontaneity and
-							intuition that guide the creative process.
-							<br /><br />
-							At the heart of this abstract masterpiece lies a profound exploration of color and form. The interplay of
-							light and shadow creates a dynamic energy that pulses with life, drawing the eye in and encouraging
-							contemplation. The absence of recognizable forms allows the viewer to project their own interpretations
-							onto the canvas, making each encounter with the artwork a unique and personal experience.
-							<br /><br />
-							"Whispers of Color" is more than just a painting; it is a journey into the unknown, a celebration of the
-							abstract, and a testament to the power of art to inspire and provoke. It stands as a reminder that beauty
-							and meaning can be found in the most unexpected places, hidden within the swirls and strokes of an
-							artist's vision.
-						</p>
+					<div class="frcc carouselControls">
+						<p style="color: silver;">10 fotografii</p>
 					</div>
 				</div>
 			</div>
