@@ -38,7 +38,8 @@
 	<link rel="stylesheet" href="http://static.localhost/assets/navbar.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/galleryDetail.css">
 	<script src="http://static.localhost/assets/main.js" async></script>
-	<script type="module" src="http://static.localhost/assets/utils.js"></script>
+	<script async type="module" src="http://static.localhost/assets/utils.js"></script>
+	<script defer src="http://static.localhost/assets/galleryDetail.js"></script>
 </head>
 
 <body>
@@ -158,10 +159,6 @@
 					</div>
 					<div class="frss galleryItemBodyPictures">
 						<img
-							class="paintingImage activePreview"
-							src="http://static.localhost/images/4d9d7f68-f4bb-4adf-b743-516973c554c1_320.jpg"
-						>
-						<img
 							class="paintingImage"
 							src="http://static.localhost/images/8c76c17a-d063-4d48-a255-0f4d7cd8998b_320.jpg"
 						>
@@ -206,6 +203,18 @@
 			</div>
 		</div>
 	</div>
+	<dialog id="imageDialog">
+		<div id="imageDialogBody">
+			<button id="imageDialogClose">Close</button>
+			<button id="imageDialogPrev">Prev</button>
+			<button id="imageDialogNext">Next</button>
+			<img
+				id="imageDialogImage"
+				src=""
+				maxWidth="1090"
+			>
+		</div>
+	</dialog>
 	<!-- FOOTER -->
 	<footer id="footer">
 		<section>
