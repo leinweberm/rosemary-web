@@ -9,3 +9,4 @@ src/certs/*
 /admin/.idea
 /admin/dist
 /development/nginx/*.log
+/www

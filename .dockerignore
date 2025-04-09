@@ -1,0 +1,17 @@
+.git/
+.idea/
+admin/
+database/
+development/
+static/
+target/
+test/
+www/
+.env
+.env.*
+.gitignore
+Dockerfile.*
+notes.md
+openapi.yaml
+README.md
+todos.md

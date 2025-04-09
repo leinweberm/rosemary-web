@@ -19,10 +19,8 @@ lazy_static = "1.4.0"
 log = "0.4.22"
 memory-stats = "1.1.0"
 once_cell = "1.19.0"
-openssl = "0.10.64"
 postgres = "0.19.7"
 postgres-from-row = "0.5.2"
-postgres-openssl = "0.5.0"
 pretty_env_logger = "0.5.0"
 rand = "0.8.5"
 ring = "0.17.8"
@@ -34,11 +32,12 @@ sql_query_builder = { version = "2.4.1", features = ["postgresql"] }
 sqlx = { version = "0.8.0", features=[
 	"postgres",
 	"runtime-tokio",
-	"tls-native-tls",
+	"runtime-tokio-rustls",
 	"derive",
 	"uuid",
 	"chrono",
-	"json"
+	"json",
+	"tls-rustls"
 ] }
 tokio = { version = "1.37.0", features = ["full"] }
 tokio-postgres = "0.7.10"

@@ -18,7 +18,7 @@ pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
     debug!(target: "db", "initialized basic connection options");
 
     if cert_required {
-        debug!(target: "db", "setting connection SSL mode");
+        debug!(target: "db", "setting connection SSL mode using rustls");
         connect_options = connect_options.ssl_mode(PgSslMode::Require);
         connect_options = connect_options.ssl_root_cert(&cert_path);
     } else {
@@ -30,7 +30,7 @@ pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
         .max_connections(5)
         .connect_with(connect_options)
         .await?;
-    debug!(target: "db", "aquired database connection pool");
+    debug!(target: "db", "acquired database connection pool");
 
     let pool_clone = pool.clone();
     debug!(target: "db", "database connection pool cloned");
@@ -44,7 +44,7 @@ pub async fn init_connection() -> Result<Pool<Postgres>, sqlx::Error> {
 }
 
 pub async fn get_client() -> Result<&'static Pool<Postgres>, std::io::Error> {
-    debug!(target: "db", "getting static datatabase pool reference");
+    debug!(target: "db", "getting static database pool reference");
     CLIENT
         .get()
         .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::Other, "Client does not exist"))

@@ -1,0 +1,24 @@
+services:
+  rust_server:
+    container_name: rust-server
+    build: .
+    ports:
+      - 3030:3030
+    networks:
+      - rosemary_network
+    volumes:
+      - ./src/certs:/app/certs
+      - ./.env.dev:/app/.env
+      - ./static/www:/app/www/static
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src
+          target: /app
+        - action: rebuild
+          path: ./templates
+          target: /app
+
+networks:
+  rosemary_network:
+    driver: bridge

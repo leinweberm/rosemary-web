@@ -1,21 +1,28 @@
 # ROSEMARY WEB
 
-## Server
+- [About](#about)
+- [Development](#development)
+- [Deployment](#deployment)
+
+## About
+www.rosemary-artist.com are commercial websites including selling paintings, photography services and blog. Application is made of:
+ - backend server written in rust providing CRUD rest API + serving static HTML fles for main website. 
+ - admin SPA written in Vue 3
+
+## Development
+### requirements:
+- docker installed
+- docker compose 2.22+
+
+## Deployment
+
 ### Files on VM
+
 **certs:**
 - /etc/letsencrypt/live/rosemary-artist.com/fullchain.pem;
 - /etc/letsencrypt/live/rosemary-artist.com/privkey.pem;
 **app files:**
 - /var/www/rosemary-artist/
-
-### Build
-```docker build -t rosemary-server:prod -f Dockerfile .```
-
-### Run
-```docker run -v /var/www/rosemary-artist/static:app/static -p 3030:3030 rosemary-server```
-
-### Run docker-compose
-```docker-compose up --build```
 
 ### Tokio tests
 ```cargo test -- --nocapture```
