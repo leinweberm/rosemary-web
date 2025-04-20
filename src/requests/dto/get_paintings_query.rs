@@ -49,12 +49,12 @@ impl GetPaintingsQuery {
 
         let limit = if let Some(limit_value) = &self.limit {
             if *limit_value > 100_u8 {
-                0_u8
-            } else {
+                25_u8
+						} else {
                 *limit_value
             }
         } else {
-            0_u8
+            25_u8
         };
 
         let offset = if let Some(offset_value) = &self.offset {

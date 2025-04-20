@@ -1,3 +1,4 @@
+const { handleSwipe } = window.utils;
 // @ts-check
 const imageSrcs = [];
 let currentImageIndex = 0;
@@ -26,7 +27,25 @@ const updateDialogImage = (tempIndex) => {
 	dialogImage.src=`${baseUrl}_${dialogImage.getAttribute('maxWidth')}.jpg`;
 };
 
-const initDetailPage = () => {
+const addOrderEvents = () => {
+	/** @type {HTMLButtonElement | null} */
+	const buyButton = document.querySelector('#buyButton');
+	/** @type {HTMLDialogElement | null} */
+	const buyDialog = document.querySelector('#buyDialog');
+	if (!buyButton || !buyDialog) return;
+
+	buyButton.addEventListener('click', (e) => {
+		e.stopPropagation();
+		buyDialog.showModal();
+	});
+
+	buyDialog.addEventListener('click', (e) => {
+		e.stopPropagation();
+		buyDialog.close();
+	});
+};
+
+const addPhotoEvents = () => {
 	/** @type {HTMLDialogElement | null} */
 	const dialog = document.querySelector('#imageDialog');
 	/** @type {HTMLButtonElement | null} */
@@ -39,9 +58,14 @@ const initDetailPage = () => {
 	const dialogImage = document.querySelector('#imageDialogImage');
 	/** @type {NodeListOf<HTMLImageElement>} */
 	const images = document.querySelectorAll('.paintingImage');
+	/** @type {HTMLDivElement | null} */
+	const dialogBody = document.querySelector('#imageDialogBody');
+	/** @type {NodeListOf<HTMLButtonElement>} */
+	const dialogControls = document.querySelectorAll('#imageDialogBody > button');
 
 	if (!dialog || !dialogImage) return;
 
+	// Add Event Listeners
 	(closeButton) && closeButton.addEventListener('click', () => {
 		dialog.close();
 	});
@@ -56,6 +80,25 @@ const initDetailPage = () => {
 		e.stopPropagation();
 		updateDialogImage(currentImageIndex + 1);
 	});
+	if (dialogBody) {
+		dialogBody.addEventListener('keyup', (e) => {
+			e.stopPropagation();
+			if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+			const newImageIndex = currentImageIndex + (
+				(e.key === 'ArrowRight') ? 1 : -1
+			);
+			updateDialogImage(newImageIndex);
+		});
+		let touchHandler;
+		dialogBody.addEventListener('touchstart', (e) => {
+			touchHandler = handleSwipe(e);
+		});
+		dialogBody.addEventListener('touchend', (e) => {
+			const isNext = touchHandler(e);
+			const newImageIndex = currentImageIndex + (isNext ? 1 : -1);
+			updateDialogImage(newImageIndex);
+		});
+	}
 
 	images.forEach((image, index) => {
 		if (image && image.src) {
@@ -69,6 +112,28 @@ const initDetailPage = () => {
 			});
 		}
 	});
+
+	(dialogControls[1]) && dialogControls[1].addEventListener('click', (e) => {
+		e.stopPropagation();
+		updateDialogImage(currentImageIndex - 1);
+	});
+	(dialogControls[2]) && dialogControls[2].addEventListener('click', (e) => {
+		e.stopPropagation();
+		updateDialogImage(currentImageIndex + 1);
+	});
+};
+
+const initDetailPage = () => {
+	addPhotoEvents();
+	addOrderEvents();
+};
+
+const nextImage = () => {
+	updateDialogImage(currentImageIndex + 1);
+};
+
+const prevImage = () => {
+	updateDialogImage(currentImageIndex - 1);
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,5 +1,5 @@
 use sqlx::{Pool, Postgres};
-use std::net::Ipv4Addr;
+use std::net::{Ipv4Addr, SocketAddr};
 use warp::Filter;
 
 mod client;
@@ -38,8 +38,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let routes = requests::router::router().recover(errors::api_error::handle_rejection);
     debug!(target: "app", "Router routes initialized");
 
-    debug!(target: "app", "App is listening on {}:3030", Ipv4Addr::LOCALHOST);
-    warp::serve(routes).run((Ipv4Addr::LOCALHOST, 3030)).await;
+    let addr: SocketAddr = {
+        #[cfg(debug_assertions)]
+        {
+            (Ipv4Addr::LOCALHOST, 3030).into()
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            (Ipv4Addr::UNSPECIFIED, 3030).into()
+        }
+    };
+    debug!(target: "app", "App is listening on {}", addr.to_string());
 
+    warp::serve(routes).run(addr).await;
     Ok(())
 }

@@ -28,11 +28,7 @@
 }
 
 .paintingContentItem {
-	display: flex;
-	justify-content: flex-start;
-	align-items: center;
 	padding: 10px 20px;
-	flex-direction: column;
 }
 
 .paintingContentItem:nth-of-type(1) {
@@ -79,7 +75,7 @@ p {
 	border: 2px solid var(--gold-color);
 }
 
-.buyButton {
+#buyButton {
 	padding: 20px;
 	margin-bottom: 40px;
 	font-size: 1.2rem;
@@ -90,7 +86,7 @@ p {
 	transition: box-shadow ease-in-out 250ms;
 }
 
-.buyButton:hover {
+#buyButton:hover {
 	box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 }
 
@@ -121,7 +117,7 @@ p {
 	border: 4px solid var(--gold-color);
 }
 
-#imageDialog {
+#imageDialog, #buyDialog {
 	z-index: 5;
 	border: none;
 	position: fixed;
@@ -130,45 +126,51 @@ p {
 	max-height: 100dvh !important;
 	padding: 0;
 	margin: 0;
-	background-color: rgba(0, 0, 0, 0.1);
 	overflow: auto;
 	inset-block: 0;
-	backdrop-filter: blur(4px);
-	-webkit-backdrop-filter: blur(4px);/
 }
 
-#imageDialogBody {
-	display: flex;
+#imageDialogBody, #buyDialogBody {
 	margin: auto;
-	flex-direction: column;
 	width: 96%;
-	height: calc(100dvh - 80px);
+	height: calc(98dvh - 80px);
 	margin-top: 70px;
 	overflow: hidden;
-	align-items: center;
-	justify-content: center;
 	position: relative;
 	object-fit: contain;
 }
 
-#imageDialogClose {
+#imageDialogBody > button {
+	cursor: pointer;
+	background: rgba(0, 0, 0, 0.5);
+	outline: none;
 	border: none;
-	background: transparent;
+	height: 60px;
+	width: 60px;
 	position: absolute;
 	z-index: 6;
 	color: white;
-	right: 10px;
-	top: 10px;
+	bottom: 0px;
+	transition: background 250ms ease-in-out;
 }
 
-#imageDialogPrev {
-	z-index: 6;
-	position: absolute;
-	left: 10px;
+#imageDialogBody > button:hover {
+	background: rgba(0, 0, 0, 0.75);
 }
 
-#imageDialogNext {
-	z-index: 6;
-	position: absolute;
-	right: 10px;
+#buyDialog {
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(2px);
+}
+
+#buyDialogBody {
+	min-width: 250px;
+	max-width: 520px;
+	background: white;
+}
+
+body:has(#imageDialog:open),
+body:has(#buyDialog:open) {
+	height: 100dvh;
+	overflow: hidden;
 }

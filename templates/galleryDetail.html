@@ -36,6 +36,7 @@
 		rel="stylesheet">
 	<link rel="stylesheet" href="http://static.localhost/assets/main.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/navbar.css">
+	<link red="stylesheet" href="http://static.localhost/assets/form.css">
 	<link rel="stylesheet" href="http://static.localhost/assets/galleryDetail.css">
 	<script src="http://static.localhost/assets/main.js" async></script>
 	<script async type="module" src="http://static.localhost/assets/utils.js"></script>
@@ -104,13 +105,13 @@
 		<div class="contentContainer">
 			<div class="paintingContent">
 				<div
-					class="paintingContentItem paintingTitle"
+					class="fccs paintingContentItem paintingTitle"
 					style="margin-bottom: 20px;"
 				>
 					<h1>Whispers of Color</h1>
 				</div>
 				<div
-					class="paintingContentItem paintingDescription"
+					class="fccs paintingContentItem paintingDescription"
 				>
 					<p>In the realm where form and structure dissolve, "Whispers of Color" emerges as a testament to the
 						boundless potential of abstract art. This oil painting, a symphony of vibrant hues and fluid brushstrokes,
@@ -132,7 +133,7 @@
 						artist's vision.
 					</p>
 				</div>
-				<div class="paintingContentItem paintingInfo">
+				<div class="fccs paintingContentItem paintingInfo">
 					<div
 						class="fccc infoDimensions"
 						style="width: 320px; height: 180px; margin-bottom: 40px;"
@@ -145,11 +146,11 @@
 						</b>
 						<p style="color: silver">oil on canvas</p>
 					</div>
-					<button class="buyButton">
+					<button id="buyButton">
 						<b>Koupit 700$</b>
 					</button>
 				</div>
-				<div class="paintingContentItem carousel">
+				<div class="fccs paintingContentItem carousel">
 					<div class="fccc galleryItemBodyPicture">
 						<img
 							id="mainPaintingImage"
@@ -204,16 +205,76 @@
 		</div>
 	</div>
 	<dialog id="imageDialog">
-		<div id="imageDialogBody">
-			<button id="imageDialogClose">Close</button>
-			<button id="imageDialogPrev">Prev</button>
-			<button id="imageDialogNext">Next</button>
+		<div
+			id="imageDialogBody"
+			class="fccs"
+		>
+			<button
+				class="fccc"
+				actionTag="close"
+			>
+				Close
+			</button>
+			<button
+				class="fccc"
+				style="margin-right: 140px;"
+				actionTag="prevImage"
+			>
+				Prev
+			</button>
+			<button
+				class="fccc"
+				style="margin-left: 140px;"
+				actionTag="nextImage"
+			>
+				Next
+			</button>
 			<img
 				id="imageDialogImage"
 				src=""
 				maxWidth="1090"
 			>
 		</div>
+	</dialog>
+	<dialog id="buyDialog">
+		<form id="buyDialogForm" class="form">
+			<div
+				id="buyDialogBody"
+				class="fccs"
+			>
+				<h3>Buy Painting</h3>
+				<div id="buyDialogFormBody" class="fccs">
+					<label
+						class="contactFormLabel"
+						htmlFor="fullname"
+						for="fullname"
+					>
+						Full name
+					</label>
+					<input
+						id="fullname"
+						class="contactFormInput"
+						name="fullname"
+						type="text"
+						required
+					>
+					<label
+						class="contactFormLabel"
+						htmlFor="email"
+						for="email"
+					>
+						Email
+					</label>
+					<input
+						id="emal"
+						class="contactFormInput"
+						name="email"
+						type="email"
+						required
+					>
+				</div>
+			</div>
+		</form>
 	</dialog>
 	<!-- FOOTER -->
 	<footer id="footer">
