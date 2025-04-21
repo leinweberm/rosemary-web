@@ -1,20 +1,52 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sql_query_builder as sql;
 use sqlx::Row;
 use sqlx::{postgres::PgRow, prelude::FromRow};
 use warp::Reply;
 
-use crate::database::models::user_entries::UserEntry;
+use crate::database::models::user_entries::{UserEntry, UserEntryType};
+
+#[derive(Serialize)]
+pub struct EmailAddress {
+    email: String,
+}
+
+#[derive(Serialize)]
+pub struct PersonalizationData {
+    body: String,
+    name: String,
+    email: String,
+    phone: String,
+    subject: String,
+}
+
+#[derive(Serialize)]
+pub struct PersonalizationEntry {
+    email: String,
+    data: PersonalizationDataWrapper,
+}
+
+#[derive(Serialize)]
+pub struct PersonalizationDataWrapper {
+    data: PersonalizationData,
+}
+
+#[derive(Serialize)]
+pub struct EmailRequest {
+    from: EmailAddress,
+    to: Vec<EmailAddress>,
+    personalization: Vec<PersonalizationEntry>,
+    template_id: String,
+}
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct EmailCreate {
-    pub subject: String,
-    pub email: String,
-    pub phone: String,
-    pub body: String,
-    pub ip_address: String,
+pub struct EmailCreate<'a> {
+    pub subject: &'a str,
+    pub email: &'a str,
+    pub phone: &'a str,
+    pub body: &'a str,
+    pub ip_address: &'a str,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -60,20 +92,20 @@ impl Reply for Email {
 
 impl Email {
     pub fn count_user_entries_query(email: &str, address: &str) -> String {
-        let select = sql::Select::new()
-            .select("COUNT(*) as count")
-            .from("user_entries ue")
-            .where_clause(format!("ue.email = '{}'", email).as_str())
-            .where_or(format!("ue.ip_address = '{}'", address).as_str());
-
-        select.to_string()
+        let ip_address = if address != "unknown" {
+            Some(address)
+        } else {
+            None
+        };
+        UserEntry::count_user_entries_query(UserEntryType::ContactForm, Some(email), ip_address)
     }
 
     pub fn create_email_query(data: EmailCreate) -> String {
         let query = format!(
             r#"
 		INSERT INTO emails(subject, email, body, phone, ip_address)
-		VALUES ('{}', '{}', '{}', '{}', '{}');
+		VALUES ('{}', '{}', '{}', '{}', '{}')
+		RETURNING *;
 		"#,
             data.subject, data.email, data.body, data.phone, data.ip_address,
         );

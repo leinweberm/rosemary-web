@@ -1,6 +1,4 @@
 use askama::Template;
-use sqlx::{Pool, Postgres};
-use std::sync::Arc;
 use warp::{path, query, Filter, Rejection, Reply};
 
 use crate::client::component_props::{FooterProps, MetaProps, NavbarProps};
@@ -61,16 +59,15 @@ async fn get_template(
         String::new()
     };
 
-    let count_client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
+    let client = get_client().await.unwrap();
     let count_task = tokio::spawn(async move {
         let (count,): (i64,) = sqlx::query_as(&Painting::count_all_query())
-            .fetch_one(&*count_client)
+            .fetch_one(client)
             .await
             .expect("Failed to count paintings");
         count
     });
 
-    let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
     let parsed_query_clone = parsed_query.clone();
     let rows_task = tokio::spawn(async move {
         let static_base_url = match load::get::<String>(load::ConfigField::StaticFileUrl).await {
@@ -83,7 +80,7 @@ async fn get_template(
         let select_query =
             Painting::get_all_stubs_query(parsed_query_clone, Some(language), &static_base_url);
         let rows = sqlx::query_as::<_, PaintingStub>(&select_query)
-            .fetch_all(&*client)
+            .fetch_all(client)
             .await
             .expect("Failed to select paintings rows");
         rows

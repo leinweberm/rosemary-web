@@ -1,5 +1,3 @@
-use sqlx::{Pool, Postgres};
-use std::sync::Arc;
 use warp::{path, query, Filter, Rejection, Reply};
 
 use crate::database::connection::get_client;
@@ -9,24 +7,22 @@ use crate::requests::dto::paginated_result::PaginatedResult;
 
 async fn get_paintings(query: GetPaintingsQuery) -> Result<impl Reply, Rejection> {
     let mut result: PaginatedResult<Painting> = PaginatedResult::new();
-    let client: Arc<Pool<Postgres>> = Arc::new(get_client().await.unwrap().clone());
+    let client = get_client().await.unwrap();
     debug!(target: "api", "paintings:get_all - database client aquired");
 
-    let count_client = Arc::clone(&client);
     let count_task = tokio::spawn(async move {
         let (count,): (i64,) = sqlx::query_as(&Painting::count_all_query())
-            .fetch_one(&*count_client)
+            .fetch_one(client)
             .await
             .expect("Failed to count painting rows");
         count
     });
 
-    let rows_client = Arc::clone(&client);
     let rows_task = tokio::spawn(async move {
         let select_query = Painting::get_all_query(query, None);
         debug!(target: "db", "paintings:get_all - Painting::get_all_query {}", &select_query);
         let rows = sqlx::query_as::<_, Painting>(&select_query)
-            .fetch_all(&*rows_client)
+            .fetch_all(client)
             .await
             .expect("Failed to select painting rows");
         rows

@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	{% include "./components/head.html" %}
 	<link rel="stylesheet" href="{{ meta.static_base_url }}/assets/form.css">
 </head>
-
 <body>
 	{% include "./components/navbar.html" %}
 	<div
@@ -20,9 +18,9 @@
 		<form
 			class="fccc contactFormBody"
 			style="margin-top: 24px"
-			action="https://rosemary-artist.com/api/v1.0/contact-form"
+			action="https://rosemary-artist.com/contact/sent"
 			method="get"
-			target="hiddenFrame"
+			<!-- target="hiddenFrame" -->
 		>
 			<div class="contactFormInnerBody">
 				<img
@@ -91,20 +89,20 @@
 				name="subject"
 				class="contactFormInput"
 			>
-				<option value="obraz">{{ page.painting }}</option>
-				<option value="focení">{{ page.photography }}</option>
-				<option value="všeobecný" selected>{{ page.general }}</option>
+				<option value="painting">{{ page.painting }}</option>
+				<option value="photography">{{ page.photography }}</option>
+				<option value="general" selected>{{ page.general }}</option>
 			</select>
 			<label
-				htmlFor="message"
-				for="message"
+				htmlFor="body"
+				for="body"
 				class="contactFormLabel"
 			>
 				{{ page.message }}
 			</label>
 			<textarea
-				id="message"
-				name="message"
+				id="body"
+				name="body"
 				class="contactFormInput"
 				rows="10"
 			></textarea>
@@ -115,5 +113,4 @@
 	</div>
 	{% include "./components/footer.html" %}
 </body>
-
 </html>

@@ -30,6 +30,7 @@ impl Language {
 #[derive(Copy, Debug, Clone)]
 pub enum TranslationKeys {
     Ascending,
+    Back,
     Blog,
     Buy,
     Created,
@@ -114,12 +115,14 @@ pub struct PageTranslations {
     pub title: PageTranslation,
     pub upcoming_events: PageTranslation,
     pub width: PageTranslation,
+    pub back: PageTranslation,
 }
 
 impl PageTranslations {
     pub fn get_translation(&self, key: TranslationKeys, lang: Language) -> &'static str {
         let translation = match key {
             TranslationKeys::Ascending => &self.ascending,
+            TranslationKeys::Back => &self.back,
             TranslationKeys::Blog => &self.blog,
             TranslationKeys::Buy => &self.buy,
             TranslationKeys::Created => &self.created,

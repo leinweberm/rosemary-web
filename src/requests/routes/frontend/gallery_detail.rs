@@ -55,7 +55,7 @@ async fn get_template(language: Language, id: Uuid) -> Result<impl Reply, Reject
 
     let painting_task = tokio::spawn(async move {
         let query = Painting::get_one_query(id.clone());
-        debug!(target: "client", "painting:get - Painting::get_one_query {}", &query);
+        debug!(target: "template", "painting:get - Painting::get_one_query {}", &query);
 
         let painting = sqlx::query_as::<_, Painting>(&query)
             .fetch_one(client)
@@ -69,7 +69,7 @@ async fn get_template(language: Language, id: Uuid) -> Result<impl Reply, Reject
 
     let images_task = tokio::spawn(async move {
         let query = PaintingImage::get_all_for_query(id.clone());
-        debug!(target: "api", "paintings:get - PaintingImage::get_all_for_query {}", &query);
+        debug!(target: "template", "paintings:get - PaintingImage::get_all_for_query {}", &query);
 
         let images = sqlx::query_as::<_, PaintingImage>(&query)
             .fetch_all(client)

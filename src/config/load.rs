@@ -12,6 +12,8 @@ use tokio::sync::OnceCell;
 /// JwtSecret: String // for creating jwt keys
 /// RegisterUserSecret: String // verification that user is allowed to create another users
 /// DatabaseCertProvided: bool // does connection to database require certificate?
+/// UserActionDaily: u8 // how many actions like emails and purchases can user do perform in 24 hours
+/// MailerSendToken: String // token for sending emails via mailersend.com
 /// ```
 #[derive(Clone)]
 pub enum ConfigField {
@@ -23,6 +25,8 @@ pub enum ConfigField {
     JwtSecret,
     RegisterUserSecret,
     DatabaseCertProvided,
+    UserActionDaily,
+    MailerSendToken,
 }
 
 impl ConfigField {
@@ -36,6 +40,8 @@ impl ConfigField {
             ConfigField::JwtSecret => "jwt_secret",
             ConfigField::RegisterUserSecret => "register_user_secret",
             ConfigField::DatabaseCertProvided => "database_cert_provided",
+            ConfigField::UserActionDaily => "user_action_daily",
+            ConfigField::MailerSendToken => "mailed_send_token",
         }
     }
 }
@@ -50,6 +56,8 @@ pub struct Config {
     pub jwt_secret: String,
     pub register_user_secret: String,
     pub database_cert_provided: bool,
+    pub user_action_daily: u8,
+    pub mailer_send_token: String,
 }
 
 impl Config {
@@ -66,6 +74,8 @@ impl Config {
             ConfigField::JwtSecret => Box::new(self.jwt_secret.clone()),
             ConfigField::RegisterUserSecret => Box::new(self.register_user_secret.clone()),
             ConfigField::DatabaseCertProvided => Box::new(self.database_cert_provided),
+            ConfigField::UserActionDaily => Box::new(self.user_action_daily),
+            ConfigField::MailerSendToken => Box::new(self.mailer_send_token.clone()),
         };
 
         if let Some(result) = value.downcast_ref::<T>() {
@@ -123,6 +133,18 @@ pub async fn init() -> Result<(), io::Error> {
         Err(_) => false,
     };
 
+    field = ConfigField::UserActionDaily.to_str();
+    let user_action_limit =
+        env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
+    let user_action_num = user_action_limit
+        .parse::<u8>()
+        .expect(&format!("{} is not valid u8", &field));
+    let user_action_daily: u8 = user_action_num;
+
+    field = ConfigField::MailerSendToken.to_str();
+    let mailer_send_token =
+        env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
+
     let config = Arc::new(Config {
         test_variable: "test".to_string(),
         database_url,
@@ -132,6 +154,8 @@ pub async fn init() -> Result<(), io::Error> {
         jwt_secret,
         register_user_secret,
         database_cert_provided,
+        user_action_daily,
+        mailer_send_token,
     });
     debug!(target: "cfg", "config instance created");
 

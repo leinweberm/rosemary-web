@@ -5,6 +5,10 @@ pub static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
         en: "ascending",
         cs: "vzestupně",
     },
+    back: PageTranslation {
+        en: "back",
+        cs: "zpět",
+    },
     blog: PageTranslation {
         en: "blog",
         cs: "blog",
