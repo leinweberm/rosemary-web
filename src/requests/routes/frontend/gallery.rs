@@ -164,7 +164,7 @@ async fn get_template(
     };
 
     let mut meta_props = MetaProps::default(Some(language));
-    meta_props.url = format!("www.rosemary-artist.com/{}", language.to_str());
+    meta_props.url = format!("www.rosemary-artist.com/{}/gallery", language.to_str());
 
     let template = GalleryPage {
         meta: meta_props,

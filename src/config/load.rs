@@ -170,6 +170,34 @@ where
     result
 }
 
+pub fn get_sync<T>(field: ConfigField) -> Result<T, io::Error>
+where
+    T: 'static + Any + Clone,
+{
+    let config_ref = CONFIG
+        .get()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "Config does not exist"))?;
+
+    let config = config_ref.as_ref();
+
+    let field_clone = field.clone();
+    let result = config.get_field::<T>(field);
+
+    match &result {
+        Ok(_) => {
+            debug!(
+                target: "cfg", "Successfully retrieved config value for field {}",
+                field_clone.to_str()
+            );
+        }
+        Err(e) => {
+            error!(target: "cfg", "Failed to retrieve config value: {:?}", e);
+        }
+    };
+
+    result
+}
+
 pub async fn test() -> Result<(), io::Error> {
     let value = get::<String>(ConfigField::TestVariable).await;
 

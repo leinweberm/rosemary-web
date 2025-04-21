@@ -405,4 +405,26 @@ impl Painting {
             )
         }
     }
+
+    pub fn get_title(&self, language: Language) -> &str {
+        if let Some(title) = &self.painting_title {
+            match language {
+                Language::Cs => title.cs.as_str(),
+                Language::En => title.en.as_str(),
+            }
+        } else {
+            "Failed to get painting title"
+        }
+    }
+
+    pub fn get_description(&self, language: Language) -> &str {
+        if let Some(description) = &self.painting_description {
+            match language {
+                Language::Cs => description.cs.as_str(),
+                Language::En => description.en.as_str(),
+            }
+        } else {
+            "Failed to get painting description"
+        }
+    }
 }

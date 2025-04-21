@@ -9,6 +9,10 @@ pub static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
         en: "blog",
         cs: "blog",
     },
+    buy: PageTranslation {
+        en: "buy",
+        cs: "koupit",
+    },
     created: PageTranslation {
         en: "created",
         cs: "vytvořeno",
@@ -16,6 +20,10 @@ pub static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
     contact: PageTranslation {
         en: "contact",
         cs: "kontakt",
+    },
+    close: PageTranslation {
+        en: "close",
+        cs: "zavřít",
     },
     descending: PageTranslation {
         en: "descending",
@@ -36,6 +44,10 @@ pub static PAGE_TRANSLATIONS: PageTranslations = PageTranslations {
     filter: PageTranslation {
         en: "filter",
         cs: "filtrovar",
+    },
+    full_name: PageTranslation {
+        en: "full name",
+        cs: "celé jméno",
     },
     gallery: PageTranslation {
         en: "gallery",
@@ -94,6 +106,10 @@ Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_
         en: "name",
         cs: "jméno",
     },
+    next: PageTranslation {
+        en: "next",
+        cs: "další",
+    },
     painting: PageTranslation {
         en: "painting",
         cs: "obraz",
@@ -121,6 +137,10 @@ Přestože v_mých obrazech můžete vidět mnoho věcí, nejsou to_portréty a_
     price: PageTranslation {
         en: "price",
         cs: "cena",
+    },
+    prev: PageTranslation {
+        en: "previous",
+        cs: "předchozí",
     },
     send: PageTranslation {
         en: "send",

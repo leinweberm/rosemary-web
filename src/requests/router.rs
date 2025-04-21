@@ -8,6 +8,10 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
     routes::frontend::index::get()
         .or(routes::frontend::index::get_cz())
         .or(routes::frontend::index::get_en())
+        // GET /gallery/:id
+        .or(routes::frontend::gallery_detail::get())
+        .or(routes::frontend::gallery_detail::get_cz())
+        .or(routes::frontend::gallery_detail::get_en())
         // GET /gallery
         .or(routes::frontend::gallery::get())
         .or(routes::frontend::gallery::get_cz())

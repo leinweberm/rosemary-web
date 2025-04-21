@@ -1,4 +1,5 @@
 use crate::client::translations::{get_translation, Language, TranslationKeys};
+use crate::config::load;
 
 #[derive(Debug)]
 pub struct MetaProps<'a> {
@@ -12,6 +13,7 @@ pub struct MetaProps<'a> {
     pub summary_large_image: &'a str,
     pub twitter_handle: &'a str,
     pub url: String,
+    pub static_base_url: String,
 }
 
 impl<'a> MetaProps<'a> {
@@ -20,6 +22,14 @@ impl<'a> MetaProps<'a> {
             language_enum
         } else {
             Language::Cs
+        };
+
+        let static_base_url = match load::get_sync::<String>(load::ConfigField::StaticFileUrl) {
+            Ok(path) => path,
+            Err(error) => {
+                error!(target: "template", "paintings:get_all - failed to get static base url {}", error);
+                String::new()
+            }
         };
 
         Self {
@@ -33,6 +43,7 @@ impl<'a> MetaProps<'a> {
             summary_large_image: "",
             twitter_handle: "",
             url: format!("www.rosemary-artist.com/{}", lang.to_str()),
+            static_base_url: static_base_url.clone(),
         }
     }
 }

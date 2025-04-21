@@ -50,7 +50,7 @@ impl GetPaintingsQuery {
         let limit = if let Some(limit_value) = &self.limit {
             if *limit_value > 100_u8 {
                 25_u8
-						} else {
+            } else {
                 *limit_value
             }
         } else {

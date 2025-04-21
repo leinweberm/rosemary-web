@@ -6,6 +6,7 @@ use sqlx::prelude::FromRow;
 use sqlx::{Error, Row};
 use uuid::Uuid;
 
+use crate::client::translations::Language;
 use crate::database::models::generics::Translation;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -171,6 +172,28 @@ impl PaintingImage {
 		"#,
             id
         )
+    }
+
+    pub fn get_title(&self, language: Language) -> &str {
+        if let Some(title) = &self.title {
+            match language {
+                Language::Cs => title.cs.as_str(),
+                Language::En => title.en.as_str(),
+            }
+        } else {
+            "Failed to get image title"
+        }
+    }
+
+    pub fn get_alt(&self, language: Language) -> &str {
+        if let Some(alt) = &self.alt {
+            match language {
+                Language::Cs => alt.cs.as_str(),
+                Language::En => alt.en.as_str(),
+            }
+        } else {
+            "Failed to get image alt"
+        }
     }
 }
 
