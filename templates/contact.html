@@ -3,7 +3,7 @@
 
 <head>
 	{% include "./components/head.html" %}
-	<link rel="stylesheet" href="http://static.localhost/assets/form.css">
+	<link rel="stylesheet" href="{{ meta.static_base_url }}/assets/form.css">
 </head>
 
 <body>
@@ -26,7 +26,7 @@
 		>
 			<div class="contactFormInnerBody">
 				<img
-					src="http://static.localhost/images/contact_me_photo.jpg"
+					src="{{ meta.static_base_url }}/images/contact_me_photo.jpg"
 					width="250px"
 					height="250px"
 					alt="Rosemary, the author"
