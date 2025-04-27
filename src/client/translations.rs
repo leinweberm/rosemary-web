@@ -12,7 +12,7 @@ pub enum Language {
 }
 
 impl Language {
-    pub fn to_str(&self) -> &str {
+    pub fn to_str(&self) -> &'static str {
         match self {
             Language::Cs => "cs",
             Language::En => "en",

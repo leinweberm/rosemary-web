@@ -4,28 +4,48 @@ use crate::utils::cors::cors_setting::settings;
 use warp::Filter;
 
 pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    // GET index page
-    routes::frontend::index::get()
+    let client =
+        // GET /
+        routes::frontend::index::get()
+        // GET /cs
         .or(routes::frontend::index::get_cz())
+        // GET /en
         .or(routes::frontend::index::get_en())
+        .boxed();
+
+    let gallery_client =
         // GET /gallery/:id
-        .or(routes::frontend::gallery_detail::get())
+        routes::frontend::gallery_detail::get()
+        // GET /cs/gallery/:id
         .or(routes::frontend::gallery_detail::get_cz())
+        // GET /en/gallery/:id
         .or(routes::frontend::gallery_detail::get_en())
         // GET /gallery
         .or(routes::frontend::gallery::get())
+        // GET /cs/gallery
         .or(routes::frontend::gallery::get_cz())
+        // GET /en/gallery
         .or(routes::frontend::gallery::get_en())
+        .boxed();
+
+    let contact_client =
         // GET /contact/sent
-        .or(routes::frontend::contact_form::get())
+        routes::frontend::contact_form::get()
+        // GET /cs/contact/sent
         .or(routes::frontend::contact_form::get_cz())
+        // GET /en/contact/sent
         .or(routes::frontend::contact_form::get_en())
         // GET /contact
         .or(routes::frontend::contact::get())
+        // GET /cs/contact
         .or(routes::frontend::contact::get_cz())
+        // GET /en/contact
         .or(routes::frontend::contact::get_en())
+        .boxed();
+
+    let backend_routes =
         // GET /api/v0.0/paintings/:Uuid
-        .or(routes::v1_0::paintings::get::get())
+        routes::v1_0::paintings::get::get()
         // GET /api/v1.0/paintings
         .or(routes::v1_0::paintings::get_all::get())
         // POST /api/v1.0/paintings
@@ -50,10 +70,13 @@ pub fn router() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejecti
         .or(routes::v1_0::auth::delete::delete())
         // GET /api/v1.0/users/refresh/token
         .or(routes::v1_0::auth::refresh::refresh())
-        // Error handling
+        .boxed();
+
+    client
+        .or(gallery_client)
+        .or(contact_client)
+        .or(backend_routes)
         .recover(handle_rejection)
-        // Allow CORS
         .with(settings())
-        // Logging
         .with(warp::log("api"))
 }

@@ -8,7 +8,7 @@ use warp::Reply;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserEntryCount {
-    pub count: i16,
+    pub count: i64,
 }
 
 impl<'r> FromRow<'r, PgRow> for UserEntryCount {
@@ -42,7 +42,6 @@ pub struct UserEntry {
     pub id: i64,
     pub email: Option<String>,
     pub entry_type: String,
-    pub ip_address: String,
     pub created: DateTime<Utc>,
 }
 
@@ -52,7 +51,6 @@ impl<'r> FromRow<'r, PgRow> for UserEntry {
             id: row.try_get("id")?,
             email: row.try_get("email")?,
             entry_type: row.try_get("entry_type")?,
-            ip_address: row.try_get("ip_address")?,
             created: row.try_get("created")?,
         })
     }
@@ -64,7 +62,6 @@ impl Reply for UserEntry {
             "id": self.id,
             "email": self.email,
             "entry_type": self.entry_type,
-            "ip_address": self.ip_address,
             "created": self.created,
         });
 
@@ -80,7 +77,7 @@ impl UserEntry {
     ) -> String {
         let mut select = sql::Select::new()
             .select("COUNT(*) AS count")
-            .from("user_entries ue")
+            .from("rosemary.user_entries ue")
             .where_clause(format!("ue.entry_type = '{}'", entry_type.to_str()).as_str())
             .where_and("ue.created >= NOW() - INTERVAL '24 hours'");
 
@@ -114,7 +111,7 @@ impl UserEntry {
 
         format!(
             r#"
-			INSERT INTO user_entries(email, ip_address, entry_type)
+			INSERT INTO rosemary.user_entries(email, ip_address, entry_type)
 			VALUES('{}', '{}', '{}')
 			RETURNING *;
 		"#,

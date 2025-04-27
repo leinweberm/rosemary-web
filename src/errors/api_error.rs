@@ -201,6 +201,7 @@ impl reject::Reject for ImageResizeError {}
 
 pub async fn handle_rejection(error: Rejection) -> Result<impl warp::Reply, Rejection> {
     error!(target: "api", "request error - {:?}", error);
+    // error!(target: "api", "request trace - {:?}", std::backtrace::Backtrace::capture());
     let mut response = GenericResponse::<()> {
         status: Status::Error,
         message: "internalServerError",

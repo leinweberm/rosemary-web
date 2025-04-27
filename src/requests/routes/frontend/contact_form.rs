@@ -12,11 +12,12 @@ use crate::database::connection::get_client;
 use crate::database::models::emails::{Email, EmailCreate};
 use crate::database::models::user_entries::{UserEntry, UserEntryCount, UserEntryType};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct ContactSentData<'a> {
     pub result: &'a str,
     pub description: &'a str,
     pub back: &'a str,
+    pub back_url: Option<String>,
     pub title: &'a str,
 }
 
@@ -58,6 +59,7 @@ fn internal_error_texts(language: Language) -> Result<Box<dyn Reply>, Rejection>
         page: ContactSentData {
             result,
             description,
+            back_url: None,
             back: get_translation(TranslationKeys::Back, language),
             title: "Rosemary - Artist",
         },
@@ -89,6 +91,7 @@ fn unauthorized_error_texts<'a>(language: Language) -> Result<Box<dyn Reply>, Re
         page: ContactSentData {
             result,
             description,
+            back_url: None,
             back: get_translation(TranslationKeys::Back, language),
             title: "Rosemary - Artist",
         },
@@ -105,12 +108,19 @@ async fn get_template(
     query: ContactFormQuery,
     ip: Option<SocketAddr>,
 ) -> Result<impl Reply, Rejection> {
+    debug!(target: "template", "contact:sent - start handling the request");
     let client = get_client().await.unwrap();
-    let http_client = reqwest::Client::new();
-    let user_action_limit = load::get::<i8>(ConfigField::UserActionDaily).await.unwrap();
-    let mailer_token = load::get::<String>(ConfigField::MailerSendToken)
-        .await
+    let http_client = reqwest::ClientBuilder::new()
+        .use_rustls_tls()
+        .build()
         .unwrap();
+    debug!(target: "template", "contact:sent - http and database clients created");
+
+    let user_action_limit = load::get_sync::<u8>(ConfigField::UserActionDaily).unwrap();
+    let mailer_token = load::get_sync::<String>(ConfigField::MailerSendToken).unwrap();
+    let app_base_url = load::get_sync::<String>(ConfigField::AppBaseUrl).unwrap();
+    debug!(target: "template", "contact:sent - config variables loaded");
+
     let user_ip = ip
         .map(|addr| addr.ip().to_string())
         .unwrap_or_else(|| "unknown".into());
@@ -126,14 +136,16 @@ async fn get_template(
     let mut meta_props = MetaProps::default(Some(language));
     meta_props.url = format!("www.rosemary-artist.com/{}/contact/sent", language.to_str());
 
-    let (page_result, page_description) = match language {
+    let (page_result, page_description, back_path) = match language {
         Language::Cs => (
             "Zprává úspěšně odeslána",
             "Jsem ráda, že jste se rozhodli se mnou spojit. Budu Vás kontaktovat jakmile to bude možné.",
+            "/cs/contact",
         ),
         Language::En => (
             "Message sent",
-            "Thank you for getting in touch with me, I will get back to you as soon as possible."
+            "Thank you for getting in touch with me, I will get back to you as soon as possible.",
+            "/en/contact",
         ),
     };
 
@@ -141,6 +153,7 @@ async fn get_template(
         result: page_result,
         description: page_description,
         title: "Rosemary - Artist",
+        back_url: Some(format!("{}{}", &app_base_url, back_path)),
         back: get_translation(TranslationKeys::Back, language),
     };
 
@@ -153,7 +166,7 @@ async fn get_template(
 
     match actions_count {
         Ok(value) => {
-            if value.count >= user_action_limit as i16 {
+            if value.count >= user_action_limit as i64 {
                 return unauthorized_error_texts(language);
             }
         }
@@ -196,6 +209,7 @@ async fn get_template(
         }],
         "template_id": "7dnvo4d381xg5r86"
     });
+		debug!(target: "template", "contact:sent - email payload body {:?}", &email_payload.to_string());
 
     let mailer_response = http_client
         .post("https://api.mailersend.com/v1/email")
@@ -207,11 +221,13 @@ async fn get_template(
         .await;
 
     match mailer_response {
-        Ok(_) => (),
+        Ok(value) => {
+            debug!(target: "template", "contact:sent - email sent {:?}", value);
+        }
         Err(err) => {
             error!(
                 target: "template",
-                "sending email via mailer failed {:?}",
+                "contact:sent - sending email via mailer failed {:?}",
                 err
             );
             return internal_error_texts(language);
@@ -260,7 +276,7 @@ async fn get_template(
     }
 
     let result = template.render().unwrap();
-    return Ok(Box::new(warp::reply::html(result)))
+    return Ok(Box::new(warp::reply::html(result)));
 }
 
 pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -276,7 +292,7 @@ pub fn get() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
 pub fn get_cz() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path(Language::Cs.to_str()))
-        .and(path("contact-form"))
+        .and(path("contact"))
         .and(path("sent"))
         .and(query::<ContactFormQuery>())
         .and(remote())

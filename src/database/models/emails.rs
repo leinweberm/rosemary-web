@@ -56,7 +56,6 @@ pub struct Email {
     pub email: String,
     pub phone: String,
     pub body: String,
-    pub ip_address: String,
     pub created: DateTime<Utc>,
 }
 
@@ -68,7 +67,6 @@ impl<'r> FromRow<'r, PgRow> for Email {
             email: row.try_get("email")?,
             phone: row.try_get("phone")?,
             body: row.try_get("body")?,
-            ip_address: row.try_get("ip_address")?,
             created: row.try_get("created")?,
         })
     }
@@ -82,7 +80,6 @@ impl Reply for Email {
             "email": self.email,
             "phone": self.phone,
             "body": self.body,
-            "ip_address": self.ip_address,
             "created": self.created,
         });
 
@@ -103,7 +100,7 @@ impl Email {
     pub fn create_email_query(data: EmailCreate) -> String {
         let query = format!(
             r#"
-		INSERT INTO emails(subject, email, body, phone, ip_address)
+		INSERT INTO rosemary.emails(subject, email, body, phone, ip_address)
 		VALUES ('{}', '{}', '{}', '{}', '{}')
 		RETURNING *;
 		"#,

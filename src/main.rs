@@ -17,7 +17,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     pretty_env_logger::init();
 
     let _init_config = config::load::init().await?;
-    let _test_config = config::load::test().await?;
     debug!("app config loaded and tested");
 
     debug!(target: "app", "Database connecting");

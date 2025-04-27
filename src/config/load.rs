@@ -17,7 +17,6 @@ use tokio::sync::OnceCell;
 /// ```
 #[derive(Clone)]
 pub enum ConfigField {
-    TestVariable,
     DatabaseUrl,
     DatabaseCertPath,
     StaticFilesDir,
@@ -27,12 +26,12 @@ pub enum ConfigField {
     DatabaseCertProvided,
     UserActionDaily,
     MailerSendToken,
+    AppBaseUrl,
 }
 
 impl ConfigField {
     pub fn to_str(&self) -> &str {
         match self {
-            ConfigField::TestVariable => "test_variable",
             ConfigField::DatabaseUrl => "database_url",
             ConfigField::DatabaseCertPath => "database_cert_path",
             ConfigField::StaticFilesDir => "static_files_dir",
@@ -41,14 +40,14 @@ impl ConfigField {
             ConfigField::RegisterUserSecret => "register_user_secret",
             ConfigField::DatabaseCertProvided => "database_cert_provided",
             ConfigField::UserActionDaily => "user_action_daily",
-            ConfigField::MailerSendToken => "mailed_send_token",
+            ConfigField::MailerSendToken => "mailer_send_token",
+            ConfigField::AppBaseUrl => "app_base_url",
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    pub test_variable: String,
     pub database_url: String,
     pub database_cert_path: String,
     pub static_files_dir: String,
@@ -58,6 +57,7 @@ pub struct Config {
     pub database_cert_provided: bool,
     pub user_action_daily: u8,
     pub mailer_send_token: String,
+    pub app_base_url: String,
 }
 
 impl Config {
@@ -66,7 +66,6 @@ impl Config {
         T: Any + Clone,
     {
         let value: Box<dyn Any + Send> = match field {
-            ConfigField::TestVariable => Box::new(self.test_variable.clone()),
             ConfigField::DatabaseUrl => Box::new(self.database_url.clone()),
             ConfigField::DatabaseCertPath => Box::new(self.database_cert_path.clone()),
             ConfigField::StaticFilesDir => Box::new(self.static_files_dir.clone()),
@@ -76,6 +75,7 @@ impl Config {
             ConfigField::DatabaseCertProvided => Box::new(self.database_cert_provided),
             ConfigField::UserActionDaily => Box::new(self.user_action_daily),
             ConfigField::MailerSendToken => Box::new(self.mailer_send_token.clone()),
+            ConfigField::AppBaseUrl => Box::new(self.app_base_url.clone()),
         };
 
         if let Some(result) = value.downcast_ref::<T>() {
@@ -140,13 +140,16 @@ pub async fn init() -> Result<(), io::Error> {
         .parse::<u8>()
         .expect(&format!("{} is not valid u8", &field));
     let user_action_daily: u8 = user_action_num;
+		debug!(target: "app", "config:load -  user_action_num {}", user_action_num);
 
     field = ConfigField::MailerSendToken.to_str();
     let mailer_send_token =
         env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
 
+    field = ConfigField::AppBaseUrl.to_str();
+    let app_base_url = env::var(&field).expect(&format!("{} {}", &field, &missing_required_error));
+
     let config = Arc::new(Config {
-        test_variable: "test".to_string(),
         database_url,
         database_cert_path,
         static_files_dir,
@@ -156,6 +159,7 @@ pub async fn init() -> Result<(), io::Error> {
         database_cert_provided,
         user_action_daily,
         mailer_send_token,
+        app_base_url,
     });
     debug!(target: "cfg", "config instance created");
 
@@ -220,20 +224,4 @@ where
     };
 
     result
-}
-
-pub async fn test() -> Result<(), io::Error> {
-    let value = get::<String>(ConfigField::TestVariable).await;
-
-    match value {
-        Ok(result) => {
-            let value_string: String = String::from(result);
-            assert_eq!(&value_string, "test");
-            Ok(())
-        }
-        Err(e) => {
-            eprintln!("Error retrieving config: {}", e);
-            Err(io::Error::new(io::ErrorKind::InvalidData, format!("{}", e)))
-        }
-    }
 }

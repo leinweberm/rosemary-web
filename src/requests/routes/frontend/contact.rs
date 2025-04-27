@@ -20,6 +20,7 @@ pub struct ContactPageData<'a> {
     general: &'a str,
     message: &'a str,
     send: &'a str,
+    form_action: &'a str,
 }
 
 #[derive(Template)]
@@ -45,6 +46,7 @@ async fn get_template(lang: Language) -> Result<impl Reply, Rejection> {
         general: get_translation(TranslationKeys::General, lang),
         message: get_translation(TranslationKeys::Message, lang),
         send: get_translation(TranslationKeys::Send, lang),
+        form_action: &format!("/{}/contact/sent", &lang_string),
     };
 
     let mut meta_props = MetaProps::default(Some(lang));
